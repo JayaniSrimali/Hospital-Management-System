@@ -4,7 +4,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
     Calendar, Users, Clipboard, Pill, FileText, Activity,
     CheckCircle, XCircle, Clock, Search, PlusCircle,
-    ArrowRight, ChevronRight, Filter, TrendingUp, Info
+    ArrowRight, ChevronRight, Filter, TrendingUp, Info, Download
 } from 'lucide-react';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
 import {

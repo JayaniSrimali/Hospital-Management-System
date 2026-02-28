@@ -97,7 +97,7 @@ const Login = ({ setUser }) => {
                         <div className="space-y-1.5">
                             <div className="flex justify-between items-center pl-1 pr-1">
                                 <label className="text-sm font-semibold text-gray-700">Password</label>
-                                <a href="#" className="text-xs text-emerald-600 hover:text-emerald-700 transition-colors font-medium">Forgot password?</a>
+                                <Link to="/forgot-password" className="text-xs text-emerald-600 hover:text-emerald-700 transition-colors font-medium">Forgot password?</Link>
                             </div>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-emerald-500 transition-colors">
@@ -119,7 +119,7 @@ const Login = ({ setUser }) => {
                             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 hover:border-emerald-600 py-3.5 rounded-xl font-bold active:scale-[0.98] transition-all duration-200 shadow-md hover:shadow-lg relative overflow-hidden group mt-4"
                         >
                             <span className="relative z-10 flex items-center justify-center gap-2">
-                                Secure Sign In
+                                Sign In
                             </span>
                         </button>
                     </form>

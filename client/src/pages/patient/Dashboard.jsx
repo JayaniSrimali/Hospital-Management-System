@@ -369,6 +369,9 @@ const PrescriptionsList = () => {
 const BillingList = () => {
     const [bills, setBills] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [selectedBill, setSelectedBill] = useState(null);
+    const [paymentProcessing, setPaymentProcessing] = useState(false);
 
     useEffect(() => {
         const fetchBills = async () => {
@@ -387,22 +390,95 @@ const BillingList = () => {
         fetchBills();
     }, []);
 
-    const handlePay = async (id) => {
+    const handlePayClick = (bill) => {
+        setSelectedBill(bill);
+        setShowPaymentModal(true);
+    };
+
+    const handleProcessPayment = async (e) => {
+        e.preventDefault();
+        setPaymentProcessing(true);
         const token = JSON.parse(localStorage.getItem('userInfo')).token;
         try {
-            await axios.put(`http://localhost:5000/api/billing/${id}/pay`, {}, {
+            // Simulate payment processing time
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            await axios.put(`http://localhost:5000/api/billing/${selectedBill._id}/pay`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setBills(bills.map(b => b._id === id ? { ...b, status: 'Paid' } : b));
-            alert('Payment processed successfully!');
+            setBills(bills.map(b => b._id === selectedBill._id ? { ...b, status: 'Paid' } : b));
+            setShowPaymentModal(false);
+            alert('Success! Your payment has been processed and your bill is cleared.');
         } catch (err) {
             alert('Payment failed. Please try again.');
+        } finally {
+            setPaymentProcessing(false);
         }
     };
 
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-emerald-900 mb-6">Financial Records & Billing</h2>
+
+            {showPaymentModal && selectedBill && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
+                        <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-8 text-white relative">
+                            <button onClick={() => setShowPaymentModal(false)} className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors">✕</button>
+                            <div className="bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-xl">
+                                <CreditCard size={28} />
+                            </div>
+                            <h3 className="text-2xl font-extrabold tracking-tight">Checkout</h3>
+                            <p className="text-emerald-300 font-medium">Paying for: {selectedBill.description}</p>
+                            <div className="mt-6 flex justify-between items-end border-t border-white/10 pt-4">
+                                <span className="text-emerald-100/80 text-sm font-bold uppercase tracking-wider">Total Amount</span>
+                                <span className="text-3xl font-black">${selectedBill.amount.toFixed(2)}</span>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleProcessPayment} className="p-8 space-y-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-emerald-800 uppercase tracking-[0.1em] mb-1.5 ml-1">Cardholder Name</label>
+                                    <input type="text" placeholder="Johnathan Doe" required className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950 placeholder:text-emerald-300" />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-emerald-800 uppercase tracking-[0.1em] mb-1.5 ml-1">Card Number</label>
+                                    <div className="relative">
+                                        <input type="text" placeholder="0000 0000 0000 0000" maxLength="19" required className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950 placeholder:text-emerald-300" />
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-200">
+                                            <ShieldCheck size={20} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-emerald-800 uppercase tracking-[0.1em] mb-1.5 ml-1">Expiry</label>
+                                        <input type="text" placeholder="MM / YY" required className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950 placeholder:text-emerald-300 text-center" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-emerald-800 uppercase tracking-[0.1em] mb-1.5 ml-1">CVC / CVV</label>
+                                        <input type="text" placeholder="***" maxLength="3" required className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950 placeholder:text-emerald-300 text-center" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                disabled={paymentProcessing}
+                                type="submit"
+                                className={`w-full py-4 rounded-2xl font-black text-lg shadow-xl shadow-emerald-900/10 transition-all active:scale-95 flex items-center justify-center gap-3 ${paymentProcessing ? 'bg-emerald-100 text-emerald-300' : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white'}`}
+                            >
+                                {paymentProcessing ? (
+                                    <><div className="w-5 h-5 border-2 border-emerald-400 border-t-white rounded-full animate-spin"></div> Processing...</>
+                                ) : (
+                                    <><ShieldCheck size={22} /> Pay ${selectedBill.amount.toFixed(2)}</>
+                                )}
+                            </button>
+                            <p className="text-[10px] text-center text-emerald-400 font-bold uppercase tracking-widest">Secured by 256-bit SSL Encryption</p>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-6">
                 {loading ? (
@@ -431,7 +507,7 @@ const BillingList = () => {
                                             {bill.appointment ? new Date(bill.appointment.date).toLocaleDateString() : new Date(bill.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="p-4 font-semibold text-emerald-900">{bill.description || 'Consultation processing'}</td>
-                                        <td className="p-4 font-bold text-emerald-700">${bill.amount}</td>
+                                        <td className="p-4 font-bold text-emerald-700">${bill.amount.toFixed(2)}</td>
                                         <td className="p-4">
                                             <span className={`px-3 py-1.5 rounded-full text-xs font-bold inline-block ${bill.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700 border border-rose-200'
                                                 }`}>
@@ -441,7 +517,7 @@ const BillingList = () => {
                                         <td className="p-4 text-right">
                                             {bill.status !== 'Paid' ? (
                                                 <button
-                                                    onClick={() => handlePay(bill._id)}
+                                                    onClick={() => handlePayClick(bill)}
                                                     className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-emerald-700 transition-colors active:scale-95"
                                                 >
                                                     Pay Now
@@ -468,6 +544,10 @@ const BillingList = () => {
 const DoctorsList = () => {
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showBooking, setShowBooking] = useState(false);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
+    const [bookingData, setBookingData] = useState({ date: '', time: '', reason: '' });
 
     useEffect(() => {
         const fetchDoctors = async () => {
@@ -486,9 +566,109 @@ const DoctorsList = () => {
         fetchDoctors();
     }, []);
 
+    const filteredDoctors = doctors.filter(doc =>
+        doc.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doc.specialization?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleBookClick = (doctor) => {
+        setSelectedDoctor(doctor);
+        setShowBooking(true);
+    };
+
+    const handleConfirmBooking = async (e) => {
+        e.preventDefault();
+        try {
+            const token = JSON.parse(localStorage.getItem('userInfo')).token;
+            await axios.post('http://localhost:5000/api/appointments', {
+                doctorId: selectedDoctor.user._id,
+                ...bookingData
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setShowBooking(false);
+            setBookingData({ date: '', time: '', reason: '' });
+            alert(`Appointment with Dr. ${selectedDoctor.user.name} booked successfully!`);
+        } catch (err) {
+            alert(err.response?.data?.message || 'Booking failed');
+        }
+    };
+
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-emerald-900 mb-6">Our Specialists</h2>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-bold text-emerald-900">Our Specialists</h2>
+                <div className="relative w-full md:w-80">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search by name or specialty..."
+                        className="w-full pl-12 pr-4 py-3 bg-white border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all text-emerald-950 font-medium"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            {showBooking && selectedDoctor && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-950/40 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden slide-down">
+                        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white">
+                            <h3 className="text-xl font-bold">Book Appointment</h3>
+                            <p className="text-emerald-50 text-sm mt-1">With Dr. {selectedDoctor.user.name} ({selectedDoctor.specialization})</p>
+                        </div>
+                        <form onSubmit={handleConfirmBooking} className="p-8 space-y-5">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-emerald-700 uppercase mb-1">Preferred Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        className="w-full p-3 border border-emerald-100 rounded-xl bg-emerald-50/30 focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900"
+                                        value={bookingData.date}
+                                        onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-emerald-700 uppercase mb-1">Preferred Time</label>
+                                    <input
+                                        type="time"
+                                        required
+                                        className="w-full p-3 border border-emerald-100 rounded-xl bg-emerald-50/30 focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900"
+                                        value={bookingData.time}
+                                        onChange={(e) => setBookingData({ ...bookingData, time: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-emerald-700 uppercase mb-1">Reason for Visit</label>
+                                <textarea
+                                    rows="3"
+                                    placeholder="Explain your symptoms or treatment needs..."
+                                    className="w-full p-3 border border-emerald-100 rounded-xl bg-emerald-50/30 focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900"
+                                    value={bookingData.reason}
+                                    onChange={(e) => setBookingData({ ...bookingData, reason: e.target.value })}
+                                ></textarea>
+                            </div>
+                            <div className="flex gap-4 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowBooking(false)}
+                                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-2xl transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3 rounded-2xl shadow-lg transition-all active:scale-95"
+                                >
+                                    Confirm Booking
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {loading ? (
                 <div className="py-12 flex justify-center"><div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div></div>
@@ -502,7 +682,7 @@ const DoctorsList = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {doctors.map(doc => (
+                    {filteredDoctors.map(doc => (
                         <div key={doc._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-emerald-100 overflow-hidden group">
                             <div className="p-6">
                                 <div className="flex items-start justify-between mb-4">
@@ -525,7 +705,10 @@ const DoctorsList = () => {
                                     </div>
                                 </div>
 
-                                <button className="w-full bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-600 px-4 py-2.5 rounded-xl font-bold transition-colors duration-300 active:scale-95 flex items-center justify-center gap-2">
+                                <button
+                                    onClick={() => handleBookClick(doc)}
+                                    className="w-full bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-600 px-4 py-2.5 rounded-xl font-bold transition-colors duration-300 active:scale-95 flex items-center justify-center gap-2"
+                                >
                                     <Calendar size={18} /> Book Appointment
                                 </button>
                             </div>
@@ -561,9 +744,24 @@ const MyProfile = ({ user }) => {
         emergencyContact: 'John Smith - +1 (555) 987-6543 (Husband)'
     });
 
-    const handleSave = () => {
-        setIsEditing(false);
-        // Add actual API call here to save modified details later.
+    const [saving, setSaving] = useState(false);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const token = JSON.parse(localStorage.getItem('userInfo')).token;
+            // Since User model has these fields, we can update it directly
+            await axios.put(`http://localhost:5000/api/auth/profile`, profileData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setIsEditing(false);
+            alert('Profile updated successfully!');
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update profile. Please try again.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (

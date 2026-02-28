@@ -184,7 +184,7 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
 
             {isModalOpen && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] animate-in fade-in zoom-in duration-300">
                         <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-8 text-white relative">
                             <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors">✕</button>
                             <div className="bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-xl">

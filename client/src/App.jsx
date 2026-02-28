@@ -49,12 +49,12 @@ function App() {
           />
         )}
         <div className="flex-1 flex flex-col overflow-hidden relative">
-          <Navbar user={user} onLogout={handleLogout} toggleSidebar={toggleSidebar} />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 md:p-6 pb-20 md:pb-6">
+          {user && <Navbar user={user} onLogout={handleLogout} toggleSidebar={toggleSidebar} />}
+          <main className={`flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 ${user ? 'p-4 md:p-6 pb-20 md:pb-6' : ''}`}>
             <Routes>
-              <Route path="/login" element={<Login setUser={setUser} />} />
-              <Route path="/register" element={<Register setUser={setUser} />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/login" element={user ? <Navigate to="/" /> : <Login setUser={setUser} />} />
+              <Route path="/register" element={user ? <Navigate to="/" /> : <Register setUser={setUser} />} />
+              <Route path="/forgot-password" element={user ? <Navigate to="/" /> : <ForgotPassword />} />
 
               <Route
                 path="/admin/*"

@@ -5,10 +5,13 @@ import { Home, Users, UserPlus, Calendar, Pill, CreditCard, Settings, LogOut, Ac
 const Sidebar = ({ user, onLogout, isOpen, toggleSidebar }) => {
     const adminLinks = [
         { to: '/admin', icon: Home, label: 'Dashboard' },
-        { to: '/admin/doctors', icon: UserPlus, label: 'Doctors' },
-        { to: '/admin/patients', icon: Users, label: 'Patients' },
+        { to: '/admin/doctors', icon: UserPlus, label: 'Doctors Management' },
+        { to: '/admin/patients', icon: Users, label: 'Patients Management' },
         { to: '/admin/appointments', icon: Calendar, label: 'Appointments' },
-        { to: '/admin/billing', icon: CreditCard, label: 'Billing' },
+        { to: '/admin/departments', icon: Activity, label: 'Departments' },
+        { to: '/admin/billing', icon: CreditCard, label: 'Billing & Payments' },
+        { to: '/admin/prescriptions', icon: Pill, label: 'Prescriptions' },
+        { to: '/admin/reports', icon: FileText, label: 'Reports & Analytics' },
     ];
 
     const doctorLinks = [

@@ -124,17 +124,7 @@ const Login = ({ setUser }) => {
                         </Link>
                     </p>
 
-                    <div className="mt-10 pt-6 border-t border-gray-100">
-                        <p className="text-xs text-center text-gray-400 mb-3 font-medium uppercase tracking-wider">Test Credentials</p>
-                        <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-500">
-                            <span className="bg-gray-50 px-3 py-1.5 rounded-md border border-gray-200 shadow-sm">Admin: admin@test.com</span>
-                            <span className="bg-gray-50 px-3 py-1.5 rounded-md border border-gray-200 shadow-sm">Doc: doc@test.com</span>
-                            <span className="bg-gray-50 px-3 py-1.5 rounded-md border border-gray-200 shadow-sm">Pat: pat@test.com</span>
-                        </div>
-                        <div className="text-center mt-3 text-xs text-emerald-600 font-medium">
-                            App Password: <span className="font-mono text-emerald-700 ml-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">123456</span>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>

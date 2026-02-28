@@ -113,7 +113,7 @@ const DashboardHome = () => {
 };
 
 // --- GENERAL LIST TEMPLATE COMPONENT WITH MODAL ---
-const AdminListManager = ({ title, icon: Icon, data, columns, loading, formFields, onSave }) => {
+const AdminListManager = ({ title, icon: Icon, data, columns, loading, formFields, onSave, onDelete }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({});
 
@@ -161,14 +161,14 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                             </thead>
                             <tbody className="divide-y divide-emerald-50">
                                 {data.map((row, i) => (
-                                    <tr key={row._id || i} className="hover:bg-emerald-50/30 transition-colors group">
+                                    <tr key={row._id || row.id || i} className="hover:bg-emerald-50/30 transition-colors group">
                                         {columns.map((col, j) => (
                                             <td key={j} className="py-4 px-6 text-sm font-medium text-emerald-900 whitespace-nowrap">{col.render ? col.render(row) : row[col.key]}</td>
                                         ))}
                                         <td className="py-4 px-6 text-right">
-                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={16} /></button>
-                                                <button className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash size={16} /></button>
+                                            <div className="flex justify-end gap-2 transition-opacity duration-300">
+                                                <button className="p-1.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100 rounded-lg transition-colors shadow-sm"><Edit size={16} /></button>
+                                                <button onClick={() => onDelete && onDelete(row)} className="p-1.5 text-rose-600 bg-rose-50/50 hover:bg-rose-100 rounded-lg transition-colors shadow-sm"><Trash size={16} /></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -183,34 +183,35 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
             </div>
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-emerald-950/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="p-6 border-b border-emerald-50 flex justify-between items-center bg-emerald-50/30">
-                            <h3 className="text-xl font-bold text-emerald-900 flex items-center gap-2">
-                                <PlusCircle className="text-emerald-500" /> Add New Record
-                            </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-emerald-600 hover:bg-emerald-100 p-2 rounded-xl transition-colors"><X size={20} /></button>
-                        </div>
-                        <form onSubmit={handleSave} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                            {formFields?.map(f => (
-                                <div key={f.name}>
-                                    <label className="block text-sm font-bold text-emerald-800 mb-1">{f.label}</label>
-                                    {f.type === 'select' ? (
-                                        <select className="w-full p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required>
-                                            <option value="">Select...</option>
-                                            {f.options.map(o => <option key={o} value={o}>{o}</option>)}
-                                        </select>
-                                    ) : f.type === 'textarea' ? (
-                                        <textarea className="w-full p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900" rows="3" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required></textarea>
-                                    ) : (
-                                        <input type={f.type || 'text'} className="w-full p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required />
-                                    )}
-                                </div>
-                            ))}
-                            <div className="pt-4 flex justify-end gap-3 border-t border-emerald-50 mt-6 bg-white sticky bottom-0">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-emerald-700 font-bold hover:bg-emerald-50 rounded-xl transition-colors">Cancel</button>
-                                <button type="submit" className="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-700 shadow-md transition-all active:scale-95"><Save size={18} /> Save Record</button>
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
+                        <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-8 text-white relative">
+                            <button type="button" onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors">✕</button>
+                            <div className="bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-xl">
+                                <Icon size={28} />
                             </div>
+                            <h3 className="text-2xl font-extrabold tracking-tight">Add New Record</h3>
+                            <p className="text-emerald-300 font-medium mt-1">Create a new entry for {title.replace(' Management', '')}</p>
+                        </div>
+                        <form onSubmit={handleSave} className="p-8 space-y-6">
+                            <div className="space-y-4">
+                                {formFields?.map(f => (
+                                    <div key={f.name}>
+                                        <label className="block text-[10px] font-black text-emerald-800 uppercase tracking-[0.1em] mb-1.5 ml-1">{f.label}</label>
+                                        {f.type === 'select' ? (
+                                            <select className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required>
+                                                <option value="">Select...</option>
+                                                {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+                                            </select>
+                                        ) : f.type === 'textarea' ? (
+                                            <textarea className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950" rows="3" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required></textarea>
+                                        ) : (
+                                            <input type={f.type || 'text'} className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-95 flex items-center justify-center gap-2 mt-4"><Save size={18} /> Save Record</button>
                         </form>
                     </div>
                 </div>
@@ -233,7 +234,12 @@ const DoctorsManagement = () => {
     }, []);
 
     const handleSave = (newData) => {
-        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), user: { name: newData.name, email: newData.email }, specialization: newData.specialization, status: 'active' }]);
+        setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), user: { name: newData.name, email: newData.email }, specialization: newData.specialization, status: 'active' }, ...mockAdded]);
+    };
+
+    const handleDelete = (row) => {
+        setData(data.filter(item => item._id !== row._id));
+        setMockAdded(mockAdded.filter(item => item._id !== row._id));
     };
 
     const cols = [
@@ -251,7 +257,7 @@ const DoctorsManagement = () => {
         { name: 'fees', label: 'Consultation Fee ($)', type: 'number' }
     ];
 
-    return <AdminListManager title="Doctors Management" icon={UserPlus} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
+    return <AdminListManager title="Doctors Management" icon={UserPlus} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
 };
 
 const PatientsManagement = () => {
@@ -267,7 +273,12 @@ const PatientsManagement = () => {
     }, []);
 
     const handleSave = (newData) => {
-        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), user: { name: newData.name, phone: newData.phone }, age: newData.age, gender: newData.gender }]);
+        setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), user: { name: newData.name, phone: newData.phone }, age: newData.age, gender: newData.gender }, ...mockAdded]);
+    };
+
+    const handleDelete = (row) => {
+        setData(data.filter(item => item._id !== row._id));
+        setMockAdded(mockAdded.filter(item => item._id !== row._id));
     };
 
     const cols = [
@@ -285,7 +296,7 @@ const PatientsManagement = () => {
         { name: 'phone', label: 'Contact Number' }
     ];
 
-    return <AdminListManager title="Patients Management" icon={Users} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
+    return <AdminListManager title="Patients Management" icon={Users} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
 };
 
 const AppointmentsManagement = () => {
@@ -301,7 +312,12 @@ const AppointmentsManagement = () => {
     }, []);
 
     const handleSave = (newData) => {
-        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), patient: { user: { name: newData.patientName } }, doctor: { name: newData.doctorName }, date: newData.date, time: newData.time, status: 'Pending' }]);
+        setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), patient: { user: { name: newData.patientName } }, doctor: { name: newData.doctorName }, date: newData.date, time: newData.time, status: 'Pending' }, ...mockAdded]);
+    };
+
+    const handleDelete = (row) => {
+        setData(data.filter(item => item._id !== row._id));
+        setMockAdded(mockAdded.filter(item => item._id !== row._id));
     };
 
     const cols = [
@@ -326,20 +342,26 @@ const AppointmentsManagement = () => {
         { name: 'time', label: 'Time', type: 'time' }
     ];
 
-    return <AdminListManager title="Appointments Registry" icon={CalIcon} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
+    return <AdminListManager title="Appointments Registry" icon={CalIcon} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
 };
 
 const DepartmentsManagement = () => {
     const [mockAdded, setMockAdded] = useState([]);
 
-    const data = [
+    // Convert to state to allow deletion from local variable
+    const [data, setData] = useState([
         { id: 'DEP-01', name: 'Cardiology', head: 'Dr. Sarah Connor', staff: 24, status: 'Operational' },
         { id: 'DEP-02', name: 'Neurology', head: 'Dr. John Smith', staff: 18, status: 'Operational' },
         { id: 'DEP-03', name: 'Pediatrics', head: 'Dr. Emily Chen', staff: 15, status: 'Operational' },
-    ];
+    ]);
 
     const handleSave = (newData) => {
-        setMockAdded([...mockAdded, { id: `DEP-0${data.length + mockAdded.length + 1}`, name: newData.name, head: newData.head, staff: newData.staff, status: 'Operational' }]);
+        setMockAdded([{ id: `DEP-0${data.length + mockAdded.length + 1}`, name: newData.name, head: newData.head, staff: newData.staff, status: 'Operational' }, ...mockAdded]);
+    };
+
+    const handleDelete = (row) => {
+        setData(data.filter(item => item.id !== row.id));
+        setMockAdded(mockAdded.filter(item => item.id !== row.id));
     };
 
     const cols = [
@@ -356,7 +378,7 @@ const DepartmentsManagement = () => {
         { name: 'staff', label: 'Initial Staff Count', type: 'number' }
     ];
 
-    return <AdminListManager title="Hospital Departments" icon={Activity} data={[...mockAdded, ...data]} columns={cols} loading={false} formFields={fields} onSave={handleSave} />;
+    return <AdminListManager title="Hospital Departments" icon={Activity} data={[...mockAdded, ...data]} columns={cols} loading={false} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
 };
 
 const BillingManagement = () => {
@@ -372,7 +394,12 @@ const BillingManagement = () => {
     }, []);
 
     const handleSave = (newData) => {
-        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), patient: { name: newData.patientName }, date: new Date(), amount: parseFloat(newData.amount), status: newData.status }]);
+        setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), patient: { name: newData.patientName }, date: new Date(), amount: parseFloat(newData.amount), status: newData.status }, ...mockAdded]);
+    };
+
+    const handleDelete = (row) => {
+        setData(data.filter(item => item._id !== row._id));
+        setMockAdded(mockAdded.filter(item => item._id !== row._id));
     };
 
     const cols = [
@@ -390,7 +417,7 @@ const BillingManagement = () => {
         { name: 'status', label: 'Payment Status', type: 'select', options: ['Paid', 'Unpaid'] }
     ];
 
-    return <AdminListManager title="Billing & Invoicing" icon={DollarSign} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
+    return <AdminListManager title="Billing & Invoicing" icon={DollarSign} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
 };
 
 const PrescriptionsManagement = () => {
@@ -406,7 +433,12 @@ const PrescriptionsManagement = () => {
     }, []);
 
     const handleSave = (newData) => {
-        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), patient: { name: newData.patient }, doctor: { name: newData.doctor }, date: new Date(), medicines: new Array(parseInt(newData.items) || 1) }]);
+        setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), patient: { name: newData.patient }, doctor: { name: newData.doctor }, date: new Date(), medicines: new Array(parseInt(newData.items) || 1) }, ...mockAdded]);
+    };
+
+    const handleDelete = (row) => {
+        setData(data.filter(item => item._id !== row._id));
+        setMockAdded(mockAdded.filter(item => item._id !== row._id));
     };
 
     const cols = [
@@ -424,7 +456,7 @@ const PrescriptionsManagement = () => {
         { name: 'notes', label: 'Prescription Notes', type: 'textarea' }
     ];
 
-    return <AdminListManager title="Pharmacy & Prescriptions" icon={Pill} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
+    return <AdminListManager title="Pharmacy & Prescriptions" icon={Pill} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
 };
 
 const ReportsManagement = () => {
@@ -440,7 +472,12 @@ const ReportsManagement = () => {
     }, []);
 
     const handleSave = (newData) => {
-        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), reportName: newData.reportName, reportType: newData.type, patient: { name: newData.patient }, date: new Date(), fileUrl: 'new_report.pdf' }]);
+        setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), reportName: newData.reportName, reportType: newData.type, patient: { name: newData.patient }, date: new Date(), fileUrl: 'new_report.pdf' }, ...mockAdded]);
+    };
+
+    const handleDelete = (row) => {
+        setData(data.filter(item => item._id !== row._id));
+        setMockAdded(mockAdded.filter(item => item._id !== row._id));
     };
 
     const cols = [
@@ -464,7 +501,7 @@ const ReportsManagement = () => {
             <h2 className="text-2xl font-bold text-emerald-900 mb-6 flex items-center gap-3">
                 <FileText className="text-emerald-500" size={28} /> Reports & Analytics
             </h2>
-            <AdminListManager title="Published Medical Reports" icon={FileText} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />
+            <AdminListManager title="Published Medical Reports" icon={FileText} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />
         </div>
     );
 };

@@ -4,7 +4,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import { Calendar, FileText, CreditCard, PlusCircle, Activity, ShieldCheck, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
 // Custom Logo Component for Patient Portal
-const PortalHeader = () => (
+const PortalHeader = ({ user }) => (
     <div className="flex items-center gap-4 mb-8 bg-white p-6 rounded-2xl shadow-sm border border-emerald-100/50">
         <div className="relative group">
             <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl transition-all duration-500"></div>
@@ -72,7 +72,7 @@ const PatientHome = ({ user }) => {
 
     return (
         <div className="space-y-6">
-            <PortalHeader />
+            <PortalHeader user={user} />
 
             <div className="flex justify-between items-center mb-2">
                 <h2 className="text-2xl font-bold text-emerald-900">Dashboard Overview</h2>
@@ -223,8 +223,8 @@ const PatientHome = ({ user }) => {
                                         </td>
                                         <td className="p-4">
                                             <span className={`px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5 ${app.status === 'Pending' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
-                                                    app.status === 'Approved' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                                        app.status === 'Completed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'
+                                                app.status === 'Approved' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                                    app.status === 'Completed' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'
                                                 }`}>
                                                 {app.status === 'Completed' && <CheckCircle size={12} />}
                                                 {app.status === 'Pending' && <AlertCircle size={12} />}
@@ -296,8 +296,8 @@ const AppointmentsList = () => {
                                         <td className="p-4 text-emerald-600 max-w-xs truncate">{app.reason || '-'}</td>
                                         <td className="p-4">
                                             <span className={`px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5 ${app.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
-                                                    app.status === 'Approved' ? 'bg-blue-100 text-blue-700' :
-                                                        app.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                                                app.status === 'Approved' ? 'bg-blue-100 text-blue-700' :
+                                                    app.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
                                                 }`}>{app.status}</span>
                                         </td>
                                     </tr>
@@ -489,9 +489,9 @@ const PatientDashboard = ({ user }) => {
     return (
         <Routes>
             <Route path="/" element={<PatientHome user={user} />} />
-            <Route path="/appointments" element={<AppointmentsList />} />
-            <Route path="/prescriptions" element={<PrescriptionsList />} />
-            <Route path="/billing" element={<BillingList />} />
+            <Route path="appointments" element={<AppointmentsList />} />
+            <Route path="prescriptions" element={<PrescriptionsList />} />
+            <Route path="billing" element={<BillingList />} />
         </Routes>
     );
 };

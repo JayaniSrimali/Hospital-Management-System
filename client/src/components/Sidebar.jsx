@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Users, UserPlus, Calendar, Pill, CreditCard, Settings, LogOut, Activity } from 'lucide-react';
+import { Home, Users, UserPlus, Calendar, Pill, CreditCard, Settings, LogOut, Activity, FileText, User, Bell } from 'lucide-react';
 
 const Sidebar = ({ user, onLogout }) => {
     const adminLinks = [
@@ -18,10 +18,15 @@ const Sidebar = ({ user, onLogout }) => {
     ];
 
     const patientLinks = [
-        { to: '/patient', icon: Home, label: 'Dashboard' },
-        { to: '/patient/appointments', icon: Calendar, label: 'My Appointments' },
-        { to: '/patient/prescriptions', icon: Pill, label: 'My Prescriptions' },
-        { to: '/patient/billing', icon: CreditCard, label: 'My Bills' },
+        { to: '/patient', icon: Home, label: 'Dashboard Overview' },
+        { to: '/patient/appointments', icon: Calendar, label: 'Appointments' },
+        { to: '/patient/doctors', icon: Users, label: 'Doctors' },
+        { to: '/patient/prescriptions', icon: Pill, label: 'Prescriptions' },
+        { to: '/patient/reports', icon: FileText, label: 'Medical Reports' },
+        { to: '/patient/billing', icon: CreditCard, label: 'Billing & Payments' },
+        { to: '/patient/profile', icon: User, label: 'My Profile' },
+
+        { to: '/patient/settings', icon: Settings, label: 'Settings' },
     ];
 
     const links = user?.role === 'admin'

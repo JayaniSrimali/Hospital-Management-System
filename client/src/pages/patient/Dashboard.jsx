@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Routes, Route, Link } from 'react-router-dom';
-import { Calendar, FileText, CreditCard, PlusCircle, Activity, ShieldCheck, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, FileText, CreditCard, PlusCircle, Activity, ShieldCheck, Clock, CheckCircle, AlertCircle, Users, User, Bell, Settings, Search, ChevronRight } from 'lucide-react';
 
 // Custom Logo Component for Patient Portal
 const PortalHeader = ({ user }) => (
@@ -484,14 +484,94 @@ const BillingList = () => {
 };
 
 
+// --- 5. NEW PAGES PLACEHOLDERS ---
+const DoctorsList = () => (
+    <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-emerald-900 mb-6">Our Specialists</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center shadow-[0_4px_20px_rgba(16,185,129,0.05)]">
+            <div className="bg-emerald-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-emerald-100 shadow-inner">
+                <Users size={40} className="text-emerald-500" />
+            </div>
+            <h3 className="text-2xl font-extrabold text-emerald-900 mb-3 tracking-tight">Find a Doctor</h3>
+            <p className="text-emerald-600 font-medium mb-8 max-w-md mx-auto">Search and filter through our extensive list of highly qualified medical professionals to book your next consultation.</p>
+            <button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg hover:shadow-emerald-600/30 transition-all duration-300 active:scale-95 inline-flex items-center gap-2">
+                <Search size={18} /> Browse Directory
+            </button>
+        </div>
+    </div>
+);
+
+const MedicalReports = () => (
+    <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-emerald-900 mb-6">Medical Lab Reports</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center shadow-[0_4px_20px_rgba(16,185,129,0.05)]">
+            <div className="bg-teal-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-teal-100 shadow-inner">
+                <FileText size={40} className="text-teal-500" />
+            </div>
+            <h3 className="text-2xl font-extrabold text-emerald-900 mb-3 tracking-tight">No Reports Available</h3>
+            <p className="text-emerald-600 font-medium max-w-md mx-auto">Your lab, scanning, and diagnostic reports will securely appear here once uploaded by your doctor or the laboratory department.</p>
+        </div>
+    </div>
+);
+
+const MyProfile = () => (
+    <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-emerald-900 mb-6">Patient Profile</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center shadow-[0_4px_20px_rgba(16,185,129,0.05)]">
+            <div className="bg-emerald-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-emerald-100 shadow-inner">
+                <User size={40} className="text-emerald-500" />
+            </div>
+            <h3 className="text-2xl font-extrabold text-emerald-900 mb-3 tracking-tight">Personal Information</h3>
+            <p className="text-emerald-600 font-medium mb-8 max-w-md mx-auto">Manage your personal details, physical address, emergency contacts, and sensitive pre-existing medical history.</p>
+            <button className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-8 py-3.5 rounded-xl font-bold shadow-sm transition-all duration-300 active:scale-95">
+                Edit Profile
+            </button>
+        </div>
+    </div>
+);
+
+const Notifications = () => (
+    <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-emerald-900 mb-6">Alerts & Notifications</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center shadow-[0_4px_20px_rgba(16,185,129,0.05)]">
+            <div className="bg-amber-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-amber-100 shadow-inner">
+                <Bell size={40} className="text-amber-500" />
+            </div>
+            <h3 className="text-2xl font-extrabold text-emerald-900 mb-3 tracking-tight">You're All Caught Up!</h3>
+            <p className="text-emerald-600 font-medium max-w-md mx-auto">You currently have no new unread alerts regarding upcoming appointments, billing deadlines, or medical reports.</p>
+        </div>
+    </div>
+);
+
+const PatientSettings = () => (
+    <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-emerald-900 mb-6">Account Settings</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center shadow-[0_4px_20px_rgba(16,185,129,0.05)]">
+            <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-slate-200 shadow-inner">
+                <Settings size={40} className="text-slate-500" />
+            </div>
+            <h3 className="text-2xl font-extrabold text-emerald-900 mb-3 tracking-tight">Preferences & Security</h3>
+            <p className="text-emerald-600 font-medium mb-8 max-w-md mx-auto">Update your login password, manage Two-Factor Authentication (2FA), and configure your email/SMS notification settings.</p>
+            <button className="border-2 border-emerald-600 outline-none text-emerald-700 hover:bg-emerald-50 px-8 py-3.5 rounded-xl font-bold shadow-sm transition-all duration-300 active:scale-95">
+                Manage Security
+            </button>
+        </div>
+    </div>
+);
+
 // --- MAIN DASHBOARD ROUTER ---
 const PatientDashboard = ({ user }) => {
     return (
         <Routes>
             <Route path="/" element={<PatientHome user={user} />} />
             <Route path="appointments" element={<AppointmentsList />} />
+            <Route path="doctors" element={<DoctorsList />} />
             <Route path="prescriptions" element={<PrescriptionsList />} />
+            <Route path="reports" element={<MedicalReports />} />
             <Route path="billing" element={<BillingList />} />
+            <Route path="profile" element={<MyProfile />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="settings" element={<PatientSettings />} />
         </Routes>
     );
 };

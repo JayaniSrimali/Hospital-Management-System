@@ -51,7 +51,7 @@ const DashboardHome = () => {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
         datasets: [{
             label: 'Hospital Revenue ($)',
-            data: [45000, 52000, 48000, 61000, 59000, 75000 + stats.revenue], // merged mockup with realistic bump
+            data: [45000, 52000, 48000, 61000, 59000, 75000 + stats.revenue],
             borderColor: '#10b981',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
             borderWidth: 3,
@@ -113,15 +113,52 @@ const DashboardHome = () => {
 };
 
 // --- GENERAL LIST TEMPLATE COMPONENT WITH MODAL ---
-const AdminListManager = ({ title, icon: Icon, data, columns, loading, formFields, onSave, onDelete }) => {
+const AdminListManager = ({ title, icon: Icon, data, columns, loading, formFields, onSave, onDelete, onUpdate }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({});
+    const [editingId, setEditingId] = useState(null);
 
     const handleSave = (e) => {
         e.preventDefault();
-        if (onSave) onSave(formData);
+        if (editingId) {
+            if (onUpdate) onUpdate({ ...formData, _id: editingId });
+        } else {
+            if (onSave) onSave(formData);
+        }
         setIsModalOpen(false);
         setFormData({});
+        setEditingId(null);
+    };
+
+    const handleEditClick = (row) => {
+        const initialForm = {
+            ...row,
+            name: row.name || row.user?.name || '',
+            email: row.email || row.user?.email || '',
+            phone: row.phone || row.user?.phone || '',
+            patientName: row.patientName || row.patient?.name || row.patient?.user?.name || '',
+            doctorName: row.doctorName || row.doctor?.name || '',
+            patient: row.patient?.name || row.patient || '',
+            doctor: row.doctor?.name || row.doctor || '',
+            amount: row.amount || '',
+            status: row.status || '',
+            specialization: row.specialization || '',
+            fees: row.fees || '',
+            age: row.age || '',
+            gender: row.gender || '',
+            date: row.date ? new Date(row.date).toISOString().split('T')[0] : '',
+            time: row.time || '',
+            head: row.head || '',
+            staff: row.staff || '',
+            description: row.description || '',
+            items: row.medicines ? row.medicines.length : (row.items || ''),
+            notes: row.notes || '',
+            reportName: row.reportName || '',
+            type: row.type || row.reportType || ''
+        };
+        setFormData(initialForm);
+        setEditingId(row._id || row.id);
+        setIsModalOpen(true);
     };
 
     return (
@@ -136,7 +173,7 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                         <input type="text" placeholder="Search records..." className="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-100 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-sm font-medium text-emerald-900" />
                     </div>
                     {formFields && (
-                        <button onClick={() => setIsModalOpen(true)} className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2 whitespace-nowrap">
+                        <button onClick={() => { setEditingId(null); setFormData({}); setIsModalOpen(true); }} className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2 whitespace-nowrap">
                             <PlusCircle size={18} /> Add New
                         </button>
                     )}
@@ -167,7 +204,7 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                                         ))}
                                         <td className="py-4 px-6 text-right">
                                             <div className="flex justify-end gap-2 transition-opacity duration-300">
-                                                <button className="p-1.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100 rounded-lg transition-colors shadow-sm"><Edit size={16} /></button>
+                                                <button onClick={() => handleEditClick(row)} className="p-1.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100 rounded-lg transition-colors shadow-sm"><Edit size={16} /></button>
                                                 <button onClick={() => onDelete && onDelete(row)} className="p-1.5 text-rose-600 bg-rose-50/50 hover:bg-rose-100 rounded-lg transition-colors shadow-sm"><Trash size={16} /></button>
                                             </div>
                                         </td>
@@ -190,8 +227,8 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                             <div className="bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-xl">
                                 <Icon size={28} />
                             </div>
-                            <h3 className="text-2xl font-extrabold tracking-tight">Add New Record</h3>
-                            <p className="text-emerald-300 font-medium mt-1">Create a new entry for {title.replace(' Management', '')}</p>
+                            <h3 className="text-2xl font-extrabold tracking-tight">{editingId ? 'Edit Record' : 'Add New Record'}</h3>
+                            <p className="text-emerald-300 font-medium mt-1">{editingId ? 'Update details for this entry' : `Create a new entry for ${title.replace(' Management', '')}`}</p>
                         </div>
                         <form onSubmit={handleSave} className="p-8 space-y-6">
                             <div className="space-y-4">
@@ -199,19 +236,19 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                                     <div key={f.name}>
                                         <label className="block text-[10px] font-black text-emerald-800 uppercase tracking-[0.1em] mb-1.5 ml-1">{f.label}</label>
                                         {f.type === 'select' ? (
-                                            <select className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required>
+                                            <select value={formData[f.name] || ''} className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required>
                                                 <option value="">Select...</option>
                                                 {f.options.map(o => <option key={o} value={o}>{o}</option>)}
                                             </select>
                                         ) : f.type === 'textarea' ? (
-                                            <textarea className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950" rows="3" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required></textarea>
+                                            <textarea value={formData[f.name] || ''} className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950" rows="3" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required></textarea>
                                         ) : (
-                                            <input type={f.type || 'text'} className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required />
+                                            <input type={f.type || 'text'} value={formData[f.name] || ''} className="w-full px-4 py-3.5 bg-emerald-50/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all font-bold text-emerald-950" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required />
                                         )}
                                     </div>
                                 ))}
                             </div>
-                            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-95 flex items-center justify-center gap-2 mt-4"><Save size={18} /> Save Record</button>
+                            <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-xl font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-95 flex items-center justify-center gap-2 mt-4"><Save size={18} /> {editingId ? 'Update Record' : 'Save Record'}</button>
                         </form>
                     </div>
                 </div>
@@ -237,6 +274,12 @@ const DoctorsManagement = () => {
         setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), user: { name: newData.name, email: newData.email }, specialization: newData.specialization, status: 'active' }, ...mockAdded]);
     };
 
+    const handleUpdate = (updatedData) => {
+        const updater = item => item._id === updatedData._id ? { ...item, user: { ...item.user, name: updatedData.name, email: updatedData.email }, specialization: updatedData.specialization } : item;
+        setData(data.map(updater));
+        setMockAdded(mockAdded.map(updater));
+    };
+
     const handleDelete = (row) => {
         setData(data.filter(item => item._id !== row._id));
         setMockAdded(mockAdded.filter(item => item._id !== row._id));
@@ -257,7 +300,7 @@ const DoctorsManagement = () => {
         { name: 'fees', label: 'Consultation Fee ($)', type: 'number' }
     ];
 
-    return <AdminListManager title="Doctors Management" icon={UserPlus} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
+    return <AdminListManager title="Doctors Management" icon={UserPlus} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} onUpdate={handleUpdate} />;
 };
 
 const PatientsManagement = () => {
@@ -274,6 +317,12 @@ const PatientsManagement = () => {
 
     const handleSave = (newData) => {
         setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), user: { name: newData.name, phone: newData.phone }, age: newData.age, gender: newData.gender }, ...mockAdded]);
+    };
+
+    const handleUpdate = (updatedData) => {
+        const updater = item => item._id === updatedData._id ? { ...item, user: { ...item.user, name: updatedData.name, phone: updatedData.phone }, age: updatedData.age, gender: updatedData.gender } : item;
+        setData(data.map(updater));
+        setMockAdded(mockAdded.map(updater));
     };
 
     const handleDelete = (row) => {
@@ -296,7 +345,7 @@ const PatientsManagement = () => {
         { name: 'phone', label: 'Contact Number' }
     ];
 
-    return <AdminListManager title="Patients Management" icon={Users} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
+    return <AdminListManager title="Patients Management" icon={Users} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} onUpdate={handleUpdate} />;
 };
 
 const AppointmentsManagement = () => {
@@ -313,6 +362,12 @@ const AppointmentsManagement = () => {
 
     const handleSave = (newData) => {
         setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), patient: { user: { name: newData.patientName } }, doctor: { name: newData.doctorName }, date: newData.date, time: newData.time, status: 'Pending' }, ...mockAdded]);
+    };
+
+    const handleUpdate = (updatedData) => {
+        const updater = item => item._id === updatedData._id ? { ...item, patient: { ...item.patient, user: { ...item.patient?.user, name: updatedData.patientName } }, doctor: { ...item.doctor, name: updatedData.doctorName }, date: updatedData.date, time: updatedData.time } : item;
+        setData(data.map(updater));
+        setMockAdded(mockAdded.map(updater));
     };
 
     const handleDelete = (row) => {
@@ -342,13 +397,12 @@ const AppointmentsManagement = () => {
         { name: 'time', label: 'Time', type: 'time' }
     ];
 
-    return <AdminListManager title="Appointments Registry" icon={CalIcon} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
+    return <AdminListManager title="Appointments Registry" icon={CalIcon} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} onUpdate={handleUpdate} />;
 };
 
 const DepartmentsManagement = () => {
     const [mockAdded, setMockAdded] = useState([]);
 
-    // Convert to state to allow deletion from local variable
     const [data, setData] = useState([
         { id: 'DEP-01', name: 'Cardiology', head: 'Dr. Sarah Connor', staff: 24, status: 'Operational' },
         { id: 'DEP-02', name: 'Neurology', head: 'Dr. John Smith', staff: 18, status: 'Operational' },
@@ -357,6 +411,12 @@ const DepartmentsManagement = () => {
 
     const handleSave = (newData) => {
         setMockAdded([{ id: `DEP-0${data.length + mockAdded.length + 1}`, name: newData.name, head: newData.head, staff: newData.staff, status: 'Operational' }, ...mockAdded]);
+    };
+
+    const handleUpdate = (updatedData) => {
+        const updater = item => item.id === updatedData._id ? { ...item, name: updatedData.name, head: updatedData.head, staff: updatedData.staff } : item;
+        setData(data.map(updater));
+        setMockAdded(mockAdded.map(updater));
     };
 
     const handleDelete = (row) => {
@@ -378,7 +438,7 @@ const DepartmentsManagement = () => {
         { name: 'staff', label: 'Initial Staff Count', type: 'number' }
     ];
 
-    return <AdminListManager title="Hospital Departments" icon={Activity} data={[...mockAdded, ...data]} columns={cols} loading={false} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
+    return <AdminListManager title="Hospital Departments" icon={Activity} data={[...mockAdded, ...data]} columns={cols} loading={false} formFields={fields} onSave={handleSave} onDelete={handleDelete} onUpdate={handleUpdate} />;
 };
 
 const BillingManagement = () => {
@@ -395,6 +455,12 @@ const BillingManagement = () => {
 
     const handleSave = (newData) => {
         setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), patient: { name: newData.patientName }, date: new Date(), amount: parseFloat(newData.amount), status: newData.status }, ...mockAdded]);
+    };
+
+    const handleUpdate = (updatedData) => {
+        const updater = item => item._id === updatedData._id ? { ...item, patient: { ...item.patient, name: updatedData.patientName }, amount: parseFloat(updatedData.amount) || item.amount, status: updatedData.status || item.status } : item;
+        setData(data.map(updater));
+        setMockAdded(mockAdded.map(updater));
     };
 
     const handleDelete = (row) => {
@@ -417,7 +483,7 @@ const BillingManagement = () => {
         { name: 'status', label: 'Payment Status', type: 'select', options: ['Paid', 'Unpaid'] }
     ];
 
-    return <AdminListManager title="Billing & Invoicing" icon={DollarSign} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
+    return <AdminListManager title="Billing & Invoicing" icon={DollarSign} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} onUpdate={handleUpdate} />;
 };
 
 const PrescriptionsManagement = () => {
@@ -434,6 +500,12 @@ const PrescriptionsManagement = () => {
 
     const handleSave = (newData) => {
         setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), patient: { name: newData.patient }, doctor: { name: newData.doctor }, date: new Date(), medicines: new Array(parseInt(newData.items) || 1) }, ...mockAdded]);
+    };
+
+    const handleUpdate = (updatedData) => {
+        const updater = item => item._id === updatedData._id ? { ...item, patient: { ...item.patient, name: updatedData.patient }, doctor: { ...item.doctor, name: updatedData.doctor }, medicines: updatedData.items ? new Array(parseInt(updatedData.items)) : item.medicines } : item;
+        setData(data.map(updater));
+        setMockAdded(mockAdded.map(updater));
     };
 
     const handleDelete = (row) => {
@@ -456,7 +528,7 @@ const PrescriptionsManagement = () => {
         { name: 'notes', label: 'Prescription Notes', type: 'textarea' }
     ];
 
-    return <AdminListManager title="Pharmacy & Prescriptions" icon={Pill} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />;
+    return <AdminListManager title="Pharmacy & Prescriptions" icon={Pill} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} onUpdate={handleUpdate} />;
 };
 
 const ReportsManagement = () => {
@@ -473,6 +545,12 @@ const ReportsManagement = () => {
 
     const handleSave = (newData) => {
         setMockAdded([{ _id: Math.random().toString(36).substr(2, 6), reportName: newData.reportName, reportType: newData.type, patient: { name: newData.patient }, date: new Date(), fileUrl: 'new_report.pdf' }, ...mockAdded]);
+    };
+
+    const handleUpdate = (updatedData) => {
+        const updater = item => item._id === updatedData._id ? { ...item, reportName: updatedData.reportName, reportType: updatedData.type, patient: { ...item.patient, name: updatedData.patient } } : item;
+        setData(data.map(updater));
+        setMockAdded(mockAdded.map(updater));
     };
 
     const handleDelete = (row) => {
@@ -501,7 +579,7 @@ const ReportsManagement = () => {
             <h2 className="text-2xl font-bold text-emerald-900 mb-6 flex items-center gap-3">
                 <FileText className="text-emerald-500" size={28} /> Reports & Analytics
             </h2>
-            <AdminListManager title="Published Medical Reports" icon={FileText} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} />
+            <AdminListManager title="Published Medical Reports" icon={FileText} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} onUpdate={handleUpdate} />
         </div>
     );
 };

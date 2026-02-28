@@ -3,24 +3,6 @@ import axios from 'axios';
 import { Routes, Route, Link } from 'react-router-dom';
 import { Calendar, FileText, CreditCard, PlusCircle, Activity, ShieldCheck, Clock, CheckCircle, AlertCircle, Users, User, Bell, Settings, Search, ChevronRight } from 'lucide-react';
 
-// Custom Logo Component for Patient Portal
-const PortalHeader = ({ user }) => (
-    <div className="flex items-center gap-4 mb-8 bg-white p-6 rounded-2xl shadow-sm border border-emerald-100/50">
-        <div className="relative group">
-            <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl transition-all duration-500"></div>
-            <div className="relative bg-gradient-to-br from-emerald-800 to-teal-900 p-4 rounded-2xl border border-emerald-700 shadow-xl flex items-center justify-center">
-                <Activity size={36} className="text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.5)]" />
-                <ShieldCheck size={18} className="text-teal-300 absolute bottom-2 right-2 bg-emerald-900 rounded-full" />
-            </div>
-        </div>
-        <div>
-            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-800 to-teal-700 tracking-tight">
-                MediCare.Sys
-            </h2>
-            <p className="text-sm text-emerald-600 font-bold uppercase tracking-widest mt-1">Patient Portal</p>
-        </div>
-    </div>
-);
 
 // --- 1. PATIENT HOME OVERVIEW ---
 const PatientHome = ({ user }) => {
@@ -72,8 +54,6 @@ const PatientHome = ({ user }) => {
 
     return (
         <div className="space-y-6">
-            <PortalHeader user={user} />
-
             <div className="flex justify-between items-center mb-2">
                 <h2 className="text-2xl font-bold text-emerald-900">Dashboard Overview</h2>
                 <button

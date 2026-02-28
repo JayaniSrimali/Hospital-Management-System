@@ -117,6 +117,7 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({});
     const [editingId, setEditingId] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleSave = (e) => {
         e.preventDefault();
@@ -129,6 +130,19 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
         setFormData({});
         setEditingId(null);
     };
+
+    const filteredData = data.filter(row => {
+        const searchStr = searchQuery.toLowerCase();
+        return Object.values(row).some(val =>
+            val && typeof val !== 'object' && String(val).toLowerCase().includes(searchStr)
+        ) || (row.user && Object.values(row.user).some(val =>
+            val && typeof val !== 'object' && String(val).toLowerCase().includes(searchStr)
+        )) || (row.patient && Object.values(row.patient).some(val =>
+            val && typeof val !== 'object' && String(val).toLowerCase().includes(searchStr)
+        )) || (row.doctor && Object.values(row.doctor).some(val =>
+            val && typeof val !== 'object' && String(val).toLowerCase().includes(searchStr)
+        ));
+    });
 
     const handleEditClick = (row) => {
         const initialForm = {
@@ -170,7 +184,7 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                 <div className="flex gap-3 w-full sm:w-auto">
                     <div className="relative flex-1 sm:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" size={18} />
-                        <input type="text" placeholder="Search records..." className="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-100 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-sm font-medium text-emerald-900" />
+                        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search records..." className="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-100 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-sm font-medium text-emerald-900" />
                     </div>
                     {formFields && (
                         <button onClick={() => { setEditingId(null); setFormData({}); setIsModalOpen(true); }} className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2 whitespace-nowrap">
@@ -197,7 +211,7 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-emerald-50">
-                                {data.map((row, i) => (
+                                {filteredData.map((row, i) => (
                                     <tr key={row._id || row.id || i} className="hover:bg-emerald-50/30 transition-colors group">
                                         {columns.map((col, j) => (
                                             <td key={j} className="py-4 px-6 text-sm font-medium text-emerald-900 whitespace-nowrap">{col.render ? col.render(row) : row[col.key]}</td>
@@ -214,7 +228,7 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                         </table>
                     </div>
                 )}
-                {!loading && data.length === 0 && (
+                {!loading && filteredData.length === 0 && (
                     <div className="p-12 text-center text-emerald-500 font-medium">No records found.</div>
                 )}
             </div>
@@ -536,6 +550,8 @@ const ReportsManagement = () => {
     const [mockAdded, setMockAdded] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const [selectedReport, setSelectedReport] = useState(null);
+
     useEffect(() => {
         axios.get(`${API_BASE}/reports`, getConfig())
             .then(res => setData(res.data))
@@ -564,7 +580,7 @@ const ReportsManagement = () => {
         { header: 'Type', key: 'reportType' },
         { header: 'Patient', render: (r) => r.patient?.name || 'Unknown' },
         { header: 'Date', render: (r) => new Date(r.date).toLocaleDateString() },
-        { header: 'Attachment', render: (r) => r.fileUrl ? <a href="#" className="flex gap-2 items-center text-blue-600 font-bold hover:underline"><FileText size={16} /> View Data</a> : 'N/A' }
+        { header: 'Attachment', render: (r) => r.fileUrl ? <button onClick={() => setSelectedReport(r)} className="flex gap-2 items-center text-blue-600 font-bold hover:underline"><FileText size={16} /> View Data</button> : 'N/A' }
     ];
 
     const fields = [
@@ -580,6 +596,39 @@ const ReportsManagement = () => {
                 <FileText className="text-emerald-500" size={28} /> Reports & Analytics
             </h2>
             <AdminListManager title="Published Medical Reports" icon={FileText} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} onDelete={handleDelete} onUpdate={handleUpdate} />
+
+            {selectedReport && (
+                <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden animate-in fade-in zoom-in duration-300">
+                        <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-6 text-white relative flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-xl">
+                                    <FileText size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold">{selectedReport.reportName || 'Medical Document'}</h3>
+                                    <p className="text-emerald-200 text-sm font-medium">{selectedReport.patient?.name || 'Unknown Patient'} • {new Date(selectedReport.date).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setSelectedReport(null)} className="text-white/60 hover:text-white transition-colors bg-white/10 p-2 rounded-xl">✕</button>
+                        </div>
+                        <div className="p-8 bg-gray-50 flex items-center justify-center h-[60vh]">
+                            <div className="text-center space-y-4 max-w-sm">
+                                <div className="w-24 h-24 bg-emerald-100 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto shadow-sm">
+                                    <FileText size={40} />
+                                </div>
+                                <h4 className="text-lg font-bold text-emerald-950">PDF Report Viewer</h4>
+                                <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                                    The document <span className="font-bold text-emerald-700">{selectedReport.fileUrl || 'report.pdf'}</span> would be seamlessly rendered here using a PDF viewing library.
+                                </p>
+                                <button onClick={() => window.open('#', '_blank')} className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold shadow-md hover:bg-emerald-700 transition-colors inline-block mt-4">
+                                    Download Original PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

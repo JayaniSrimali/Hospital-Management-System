@@ -4,7 +4,8 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
     Calendar, Users, Clipboard, Pill, FileText, Activity,
     CheckCircle, XCircle, Clock, Search, PlusCircle,
-    ArrowRight, ChevronRight, Filter, TrendingUp, Info, Download
+    ArrowRight, ChevronRight, Filter, TrendingUp, Info, Download,
+    ShieldCheck, Bell, AlertCircle
 } from 'lucide-react';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
 import {
@@ -898,6 +899,223 @@ const DoctorAnalytics = () => {
     );
 };
 
+// --- 7. NOTIFICATIONS ---
+const DoctorNotifications = () => (
+    <div className="space-y-6">
+        <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-emerald-900">Notifications</h2>
+            <button className="text-sm font-bold text-emerald-600 hover:text-emerald-800 transition-colors bg-white px-4 py-2 rounded-xl shadow-sm border border-emerald-100">Mark all as read</button>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden">
+            <div className="flex flex-col">
+                <div className="p-6 border-b border-emerald-50 hover:bg-emerald-50/30 transition-colors flex gap-4 items-start relative overflow-hidden group">
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
+                    <div className="bg-blue-100 p-3 rounded-full text-blue-600 shrink-0 mt-1 shadow-sm"><Clock size={24} /></div>
+                    <div className="flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                            <h4 className="font-bold text-emerald-900 text-lg">Upcoming Appointment</h4>
+                            <span className="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md">1 hour ago</span>
+                        </div>
+                        <p className="text-emerald-700 font-medium">You have an upcoming general consultation with Jane Smith scheduled for today at 2:00 PM.</p>
+                        <div className="mt-3 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className="text-sm font-bold text-blue-700 bg-blue-100 px-4 py-1.5 rounded-lg hover:bg-blue-200 transition-colors">View Patient</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6 border-b border-emerald-50 hover:bg-emerald-50/30 transition-colors flex gap-4 items-start relative overflow-hidden group">
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500"></div>
+                    <div className="bg-emerald-100 p-3 rounded-full text-emerald-600 shrink-0 mt-1 shadow-sm"><CheckCircle size={24} /></div>
+                    <div className="flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                            <h4 className="font-bold text-emerald-900 text-lg">Report Sync Completed</h4>
+                            <span className="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md">Yesterday</span>
+                        </div>
+                        <p className="text-emerald-700 font-medium">New laboratory test results for John Doe have been synchronized and are available for review.</p>
+                        <div className="mt-3 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className="text-sm font-bold text-emerald-700 bg-emerald-100 px-4 py-1.5 rounded-lg hover:bg-emerald-200 transition-colors">View Report</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6 border-b border-emerald-50 hover:bg-emerald-50/30 transition-colors flex gap-4 items-start relative overflow-hidden group">
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-rose-500"></div>
+                    <div className="bg-rose-100 p-3 rounded-full text-rose-600 shrink-0 mt-1 shadow-sm"><AlertCircle size={24} /></div>
+                    <div className="flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                            <h4 className="font-bold text-emerald-900 text-lg">Urgent Message</h4>
+                            <span className="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md">2 days ago</span>
+                        </div>
+                        <p className="text-emerald-700 font-medium">Please finalize the prescription records for patient ID #2041 before the end of the shift.</p>
+                        <div className="mt-3 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className="text-sm font-bold text-rose-700 bg-rose-100 px-4 py-1.5 rounded-lg hover:bg-rose-200 transition-colors">Go to Prescriptions</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
+// --- 8. DOCTOR PROFILE ---
+const DoctorProfile = ({ user }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [profileData, setProfileData] = useState({
+        name: user?.name || 'Doctor User',
+        email: user?.email || 'doctor@medicare.com',
+        phone: '+1 (555) 123-4567',
+        specialization: 'General Surgery',
+        address: '123 Emerald Avenue, Suite 4B, New York, NY 10001',
+        emergencyContact: 'Jane Doe - +1 (555) 987-6543'
+    });
+
+    const [saving, setSaving] = useState(false);
+    const [toast, setToast] = useState(null);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const token = JSON.parse(localStorage.getItem('userInfo')).token;
+            await axios.put(`http://localhost:5000/api/auth/profile`, profileData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setIsEditing(false);
+            setToast({ message: 'Profile updated successfully!', type: 'success' });
+        } catch (err) {
+            console.error(err);
+            setToast({ message: 'Failed to update profile. Please try again.', type: 'error' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-emerald-900 mb-6">Doctor Profile</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-8 text-center md:col-span-1 border-t-4 border-t-emerald-500">
+                    <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-5xl shadow-inner mb-4">
+                        {profileData.name.charAt(0).toUpperCase()}
+                    </div>
+                    <h3 className="text-xl font-extrabold text-emerald-900">{profileData.name}</h3>
+                    <p className="text-emerald-600 font-medium mb-4">{profileData.email}</p>
+                    <div className="inline-flex py-1 px-4 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700 capitalize border border-emerald-200">
+                        {user?.role || 'Doctor'} Account
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-8 md:col-span-2">
+                    <h3 className="text-lg font-bold text-emerald-900 mb-6 border-b border-emerald-50 pb-3 flex justify-between items-center">
+                        Personal Information
+                        <button
+                            onClick={() => setIsEditing(!isEditing)}
+                            className={`text-sm font-bold px-3 py-1.5 sm:px-4 rounded-lg transition-colors ${isEditing ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'bg-emerald-50 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100'}`}
+                        >
+                            {isEditing ? 'Cancel' : 'Edit Profile'}
+                        </button>
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Full Name</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.name}
+                                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.name}</div>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Email Address</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.email}
+                                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.email}</div>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Phone Number</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.phone}
+                                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.phone}</div>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Specialization</label>
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.specialization}
+                                    onChange={(e) => setProfileData({ ...profileData, specialization: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.specialization}</div>
+                            )}
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Residential Address</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.address}
+                                    onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.address}</div>
+                            )}
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Emergency Contact</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.emergencyContact}
+                                    onChange={(e) => setProfileData({ ...profileData, emergencyContact: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.emergencyContact}</div>
+                            )}
+                        </div>
+                    </div>
+
+                    {isEditing && (
+                        <div className="mt-8 pt-6 border-t border-emerald-50 flex justify-end gap-4 slide-down">
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="px-6 py-3 text-emerald-700 hover:bg-emerald-50 rounded-xl font-bold transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 rounded-xl font-bold shadow-md transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                <CheckCircle size={18} /> Update Profile
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+        </div>
+    );
+};
+
 // --- MAIN DOCTOR DASHBOARD MANAGER ---
 const DoctorDashboard = ({ user }) => {
     return (
@@ -908,6 +1126,8 @@ const DoctorDashboard = ({ user }) => {
             <Route path="/prescriptions" element={<DoctorPrescriptions />} />
             <Route path="/reports" element={<DoctorReports />} />
             <Route path="/analytics" element={<DoctorAnalytics />} />
+            <Route path="/notifications" element={<DoctorNotifications />} />
+            <Route path="/profile" element={<DoctorProfile user={user} />} />
         </Routes>
     );
 };

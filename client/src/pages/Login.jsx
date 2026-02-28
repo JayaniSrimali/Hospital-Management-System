@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Activity, ShieldCheck, Mail, Lock } from 'lucide-react';
+import loginImage from '../assets/images/Login.jpg';
 
 const Login = ({ setUser }) => {
     const [email, setEmail] = useState('');
@@ -32,20 +33,26 @@ const Login = ({ setUser }) => {
             <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white/80 backdrop-blur-2xl rounded-3xl shadow-2xl border border-gray-100 overflow-hidden relative z-10 mx-6">
 
                 {/* Left Side - Branding & Logo */}
-                <div className="hidden md:flex flex-col justify-center items-center p-12 bg-gradient-to-br from-slate-50 to-gray-100 border-r border-gray-100">
-                    <div className="mb-8 relative group">
-                        <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-2xl group-hover:bg-emerald-400/30 transition-all duration-500"></div>
-                        <div className="relative bg-white p-6 rounded-3xl border border-gray-200 shadow-xl flex items-center justify-center">
-                            <Activity size={56} className="text-emerald-500 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]" />
-                            <ShieldCheck size={28} className="text-teal-500 absolute bottom-4 right-4 bg-white rounded-full" />
+                <div
+                    className="hidden md:flex flex-col justify-center items-center p-12 relative bg-cover bg-center border-r border-gray-100"
+                    style={{ backgroundImage: `url(${loginImage})` }}
+                >
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px]"></div>
+                    <div className="relative z-10 flex flex-col items-center">
+                        <div className="mb-8 relative group">
+                            <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-2xl group-hover:bg-emerald-400/30 transition-all duration-500"></div>
+                            <div className="relative bg-white p-6 rounded-3xl border border-gray-200 shadow-xl flex items-center justify-center">
+                                <Activity size={56} className="text-emerald-500 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]" />
+                                <ShieldCheck size={28} className="text-teal-500 absolute bottom-4 right-4 bg-white rounded-full" />
+                            </div>
                         </div>
+                        <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 tracking-tight mb-4 text-center">
+                            MediCare.Sys
+                        </h1>
+                        <p className="text-gray-600 font-medium text-center text-lg leading-relaxed max-w-sm">
+                            Advanced healthcare management, secured. Access your dashboard to manage appointments, patients, and records.
+                        </p>
                     </div>
-                    <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 tracking-tight mb-4 text-center">
-                        MediCare.Sys
-                    </h1>
-                    <p className="text-gray-500 text-center text-lg leading-relaxed max-w-sm">
-                        Advanced healthcare management, secured. Access your dashboard to manage appointments, patients, and records.
-                    </p>
                 </div>
 
                 {/* Right Side - Login Form */}

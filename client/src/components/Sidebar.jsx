@@ -14,7 +14,10 @@ const Sidebar = ({ user, onLogout, isOpen, toggleSidebar }) => {
     const doctorLinks = [
         { to: '/doctor', icon: Home, label: 'Dashboard' },
         { to: '/doctor/appointments', icon: Calendar, label: 'Appointments' },
+        { to: '/doctor/patients', icon: Users, label: 'Patients' },
         { to: '/doctor/prescriptions', icon: Pill, label: 'Prescriptions' },
+        { to: '/doctor/reports', icon: FileText, label: 'Reports' },
+        { to: '/doctor/analytics', icon: Activity, label: 'Analytics' },
     ];
 
     const patientLinks = [

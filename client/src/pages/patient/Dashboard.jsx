@@ -465,21 +465,77 @@ const BillingList = () => {
 
 
 // --- 5. NEW PAGES PLACEHOLDERS ---
-const DoctorsList = () => (
-    <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-emerald-900 mb-6">Our Specialists</h2>
-        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center shadow-[0_4px_20px_rgba(16,185,129,0.05)]">
-            <div className="bg-emerald-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-emerald-100 shadow-inner">
-                <Users size={40} className="text-emerald-500" />
-            </div>
-            <h3 className="text-2xl font-extrabold text-emerald-900 mb-3 tracking-tight">Find a Doctor</h3>
-            <p className="text-emerald-600 font-medium mb-8 max-w-md mx-auto">Search and filter through our extensive list of highly qualified medical professionals to book your next consultation.</p>
-            <button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg hover:shadow-emerald-600/30 transition-all duration-300 active:scale-95 inline-flex items-center gap-2">
-                <Search size={18} /> Browse Directory
-            </button>
+const DoctorsList = () => {
+    const [doctors, setDoctors] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const token = JSON.parse(localStorage.getItem('userInfo')).token;
+                const res = await axios.get('http://localhost:5000/api/doctors', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setDoctors(res.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDoctors();
+    }, []);
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-emerald-900 mb-6">Our Specialists</h2>
+
+            {loading ? (
+                <div className="py-12 flex justify-center"><div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div></div>
+            ) : doctors.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center shadow-[0_4px_20px_rgba(16,185,129,0.05)]">
+                    <div className="bg-emerald-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-emerald-100 shadow-inner">
+                        <Users size={40} className="text-emerald-500" />
+                    </div>
+                    <h3 className="text-2xl font-extrabold text-emerald-900 mb-3 tracking-tight">No Doctors Available</h3>
+                    <p className="text-emerald-600 font-medium mb-8 max-w-md mx-auto">We couldn't find any medical professionals in the directory at this moment.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {doctors.map(doc => (
+                        <div key={doc._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-emerald-100 overflow-hidden group">
+                            <div className="p-6">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-2xl shadow-md group-hover:scale-105 transition-transform duration-300">
+                                        {doc.user?.name?.charAt(0) || 'D'}
+                                    </div>
+                                    <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full border border-emerald-200">
+                                        ⭐ {doc.experience} Yrs Exp
+                                    </span>
+                                </div>
+                                <h3 className="text-xl font-bold text-emerald-950 mb-1">Dr. {doc.user?.name || 'Unknown'}</h3>
+                                <p className="text-emerald-600 font-semibold mb-4">{doc.specialization}</p>
+
+                                <div className="space-y-2 mb-6">
+                                    <div className="flex items-center gap-2 text-sm text-emerald-700 font-medium bg-emerald-50/50 p-2 rounded-lg border border-emerald-50">
+                                        <FileText size={16} className="text-emerald-500" /> {doc.education}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-emerald-700 font-medium bg-emerald-50/50 p-2 rounded-lg border border-emerald-50">
+                                        <CreditCard size={16} className="text-emerald-500" /> Consultation: <span className="font-bold text-emerald-900">${doc.fees}</span>
+                                    </div>
+                                </div>
+
+                                <button className="w-full bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-600 px-4 py-2.5 rounded-xl font-bold transition-colors duration-300 active:scale-95 flex items-center justify-center gap-2">
+                                    <Calendar size={18} /> Book Appointment
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-    </div>
-);
+    );
+};
 
 const MedicalReports = () => (
     <div className="space-y-6">

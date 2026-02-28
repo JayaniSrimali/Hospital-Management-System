@@ -464,8 +464,8 @@ const BillingList = () => {
             <h2 className="text-2xl font-bold text-emerald-900 mb-6">Financial Records & Billing</h2>
 
             {showPaymentModal && selectedBill && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
                         <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-8 text-white relative">
                             <button onClick={() => setShowPaymentModal(false)} className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors">✕</button>
                             <div className="bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-xl">
@@ -657,8 +657,8 @@ const DoctorsList = () => {
             </div>
 
             {showBooking && selectedDoctor && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-950/40 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden slide-down">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-emerald-950/40 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto slide-down">
                         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 text-white">
                             <h3 className="text-xl font-bold">Book Appointment</h3>
                             <p className="text-emerald-50 text-sm mt-1">With Dr. {selectedDoctor.user.name} ({selectedDoctor.specialization})</p>
@@ -865,8 +865,8 @@ const MedicalReports = () => {
 
             {/* View Modal */}
             {showModal && selectedReport && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-950/40 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden scale-in">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-emerald-950/40 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto scale-in flex flex-col">
                         <div className="bg-emerald-900 p-6 flex justify-between items-center text-white">
                             <div className="flex items-center gap-3">
                                 <Activity className="text-emerald-400" />

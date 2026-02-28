@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import {
     Users, UserPlus, Calendar as CalIcon, DollarSign, Activity, FileText, Pill,
-    Search, PlusCircle, CheckCircle, Clock, Trash, Edit, Filter, TrendingUp
+    Search, PlusCircle, Trash, Edit, TrendingUp, X, Save
 } from 'lucide-react';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { Line, Doughnut } from 'react-chartjs-2';
 import {
     Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend,
 } from 'chart.js';
@@ -112,68 +112,117 @@ const DashboardHome = () => {
     );
 };
 
-// --- GENERAL LIST TEMPLATE COMPONENT ---
-const AdminListManager = ({ title, icon: Icon, data, columns, onAdd, loading }) => (
-    <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-            <h2 className="text-2xl font-bold text-emerald-900 flex items-center gap-3">
-                <Icon size={28} className="text-emerald-500" /> {title}
-            </h2>
-            <div className="flex gap-3 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" size={18} />
-                    <input type="text" placeholder="Search records..." className="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-100 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-sm font-medium text-emerald-900" />
+// --- GENERAL LIST TEMPLATE COMPONENT WITH MODAL ---
+const AdminListManager = ({ title, icon: Icon, data, columns, loading, formFields, onSave }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [formData, setFormData] = useState({});
+
+    const handleSave = (e) => {
+        e.preventDefault();
+        if (onSave) onSave(formData);
+        setIsModalOpen(false);
+        setFormData({});
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+                <h2 className="text-2xl font-bold text-emerald-900 flex items-center gap-3">
+                    <Icon size={28} className="text-emerald-500" /> {title}
+                </h2>
+                <div className="flex gap-3 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" size={18} />
+                        <input type="text" placeholder="Search records..." className="w-full pl-10 pr-4 py-2.5 bg-white border border-emerald-100 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-sm font-medium text-emerald-900" />
+                    </div>
+                    {formFields && (
+                        <button onClick={() => setIsModalOpen(true)} className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2 whitespace-nowrap">
+                            <PlusCircle size={18} /> Add New
+                        </button>
+                    )}
                 </div>
-                <button onClick={onAdd} className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2 whitespace-nowrap">
-                    <PlusCircle size={18} /> Add New
-                </button>
             </div>
-        </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden min-h-[400px]">
-            {loading ? (
-                <div className="flex items-center justify-center p-12 text-emerald-500 h-full min-h-[300px]">
-                    <Activity size={32} className="animate-spin" />
-                </div>
-            ) : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-emerald-50/50 border-b border-emerald-100">
-                                {columns.map((col, i) => (
-                                    <th key={i} className="py-4 px-6 text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">{col.header}</th>
-                                ))}
-                                <th className="py-4 px-6 text-xs font-black text-emerald-800 uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-emerald-50">
-                            {data.map((row, i) => (
-                                <tr key={row._id || i} className="hover:bg-emerald-50/30 transition-colors group">
-                                    {columns.map((col, j) => (
-                                        <td key={j} className="py-4 px-6 text-sm font-medium text-emerald-900 whitespace-nowrap">{col.render ? col.render(row) : row[col.key]}</td>
+            <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden min-h-[400px]">
+                {loading ? (
+                    <div className="flex items-center justify-center p-12 text-emerald-500 h-full min-h-[300px]">
+                        <Activity size={32} className="animate-spin" />
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-emerald-50/50 border-b border-emerald-100">
+                                    {columns.map((col, i) => (
+                                        <th key={i} className="py-4 px-6 text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">{col.header}</th>
                                     ))}
-                                    <td className="py-4 px-6 text-right">
-                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={16} /></button>
-                                            <button className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash size={16} /></button>
-                                        </div>
-                                    </td>
+                                    <th className="py-4 px-6 text-xs font-black text-emerald-800 uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
                                 </tr>
+                            </thead>
+                            <tbody className="divide-y divide-emerald-50">
+                                {data.map((row, i) => (
+                                    <tr key={row._id || i} className="hover:bg-emerald-50/30 transition-colors group">
+                                        {columns.map((col, j) => (
+                                            <td key={j} className="py-4 px-6 text-sm font-medium text-emerald-900 whitespace-nowrap">{col.render ? col.render(row) : row[col.key]}</td>
+                                        ))}
+                                        <td className="py-4 px-6 text-right">
+                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={16} /></button>
+                                                <button className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash size={16} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+                {!loading && data.length === 0 && (
+                    <div className="p-12 text-center text-emerald-500 font-medium">No records found.</div>
+                )}
+            </div>
+
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-emerald-950/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-emerald-50 flex justify-between items-center bg-emerald-50/30">
+                            <h3 className="text-xl font-bold text-emerald-900 flex items-center gap-2">
+                                <PlusCircle className="text-emerald-500" /> Add New Record
+                            </h3>
+                            <button onClick={() => setIsModalOpen(false)} className="text-emerald-600 hover:bg-emerald-100 p-2 rounded-xl transition-colors"><X size={20} /></button>
+                        </div>
+                        <form onSubmit={handleSave} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                            {formFields?.map(f => (
+                                <div key={f.name}>
+                                    <label className="block text-sm font-bold text-emerald-800 mb-1">{f.label}</label>
+                                    {f.type === 'select' ? (
+                                        <select className="w-full p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required>
+                                            <option value="">Select...</option>
+                                            {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    ) : f.type === 'textarea' ? (
+                                        <textarea className="w-full p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900" rows="3" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required></textarea>
+                                    ) : (
+                                        <input type={f.type || 'text'} className="w-full p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900" onChange={e => setFormData({ ...formData, [f.name]: e.target.value })} required />
+                                    )}
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
+                            <div className="pt-4 flex justify-end gap-3 border-t border-emerald-50 mt-6 bg-white sticky bottom-0">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-emerald-700 font-bold hover:bg-emerald-50 rounded-xl transition-colors">Cancel</button>
+                                <button type="submit" className="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-700 shadow-md transition-all active:scale-95"><Save size={18} /> Save Record</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
-            {!loading && data.length === 0 && (
-                <div className="p-12 text-center text-emerald-500 font-medium">No records found.</div>
-            )}
         </div>
-    </div>
-);
+    );
+};
 
-// --- 2. DOCTORS MANAGEMENT ---
+// --- MANAGEMENT SCREENS ---
 const DoctorsManagement = () => {
     const [data, setData] = useState([]);
+    const [mockAdded, setMockAdded] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -183,19 +232,31 @@ const DoctorsManagement = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    const handleSave = (newData) => {
+        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), user: { name: newData.name, email: newData.email }, specialization: newData.specialization, status: 'active' }]);
+    };
+
     const cols = [
-        { header: 'ID', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'ID', render: (r) => <span className="text-gray-500">{r._id.slice(-6).toUpperCase()}</span> },
         { header: 'Doctor Name', render: (r) => <span className="font-bold">{r.user?.name}</span> },
         { header: 'Specialization', key: 'specialization' },
         { header: 'Email Primary', render: (r) => r.user?.email },
         { header: 'Status', render: (r) => <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${r.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{r.status}</span> }
     ];
-    return <AdminListManager title="Doctors Management" icon={UserPlus} data={data} columns={cols} loading={loading} />;
+
+    const fields = [
+        { name: 'name', label: 'Doctor Full Name' },
+        { name: 'email', label: 'Email Address', type: 'email' },
+        { name: 'specialization', label: 'Specialization' },
+        { name: 'fees', label: 'Consultation Fee ($)', type: 'number' }
+    ];
+
+    return <AdminListManager title="Doctors Management" icon={UserPlus} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
 };
 
-// --- 3. PATIENTS MANAGEMENT ---
 const PatientsManagement = () => {
     const [data, setData] = useState([]);
+    const [mockAdded, setMockAdded] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -205,19 +266,31 @@ const PatientsManagement = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    const handleSave = (newData) => {
+        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), user: { name: newData.name, phone: newData.phone }, age: newData.age, gender: newData.gender }]);
+    };
+
     const cols = [
-        { header: 'Reg ID', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Reg ID', render: (r) => <span className="text-gray-500">{r._id.slice(-6).toUpperCase()}</span> },
         { header: 'Patient Name', render: (r) => <span className="font-bold">{r.user?.name}</span> },
         { header: 'Age', key: 'age' },
         { header: 'Gender', render: (r) => <span className="capitalize">{r.gender}</span> },
         { header: 'Contact', render: (r) => r.user?.phone || 'N/A' }
     ];
-    return <AdminListManager title="Patients Management" icon={Users} data={data} columns={cols} loading={loading} />;
+
+    const fields = [
+        { name: 'name', label: 'Patient Name' },
+        { name: 'age', label: 'Age', type: 'number' },
+        { name: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Other'] },
+        { name: 'phone', label: 'Contact Number' }
+    ];
+
+    return <AdminListManager title="Patients Management" icon={Users} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
 };
 
-// --- 4. APPOINTMENTS ---
 const AppointmentsManagement = () => {
     const [data, setData] = useState([]);
+    const [mockAdded, setMockAdded] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -227,8 +300,12 @@ const AppointmentsManagement = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    const handleSave = (newData) => {
+        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), patient: { user: { name: newData.patientName } }, doctor: { name: newData.doctorName }, date: newData.date, time: newData.time, status: 'Pending' }]);
+    };
+
     const cols = [
-        { header: 'Ref', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Ref', render: (r) => <span className="text-gray-500">{r._id.slice(-6).toUpperCase()}</span> },
         { header: 'Patient', render: (r) => r.patient?.user?.name || 'Unknown' },
         { header: 'Assigned Doctor', render: (r) => <span className="font-bold">{r.doctor?.name}</span> },
         { header: 'Schedule', render: (r) => new Date(r.date).toLocaleDateString() },
@@ -241,16 +318,30 @@ const AppointmentsManagement = () => {
                             'bg-amber-100 text-amber-700'}`}>{r.status}</span>
         }
     ];
-    return <AdminListManager title="Appointments Registry" icon={CalIcon} data={data} columns={cols} loading={loading} />;
+
+    const fields = [
+        { name: 'patientName', label: 'Find Patient (Name)' },
+        { name: 'doctorName', label: 'Assign Doctor' },
+        { name: 'date', label: 'Appointment Date', type: 'date' },
+        { name: 'time', label: 'Time', type: 'time' }
+    ];
+
+    return <AdminListManager title="Appointments Registry" icon={CalIcon} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
 };
 
-// --- 5. DEPARTMENTS ---
 const DepartmentsManagement = () => {
+    const [mockAdded, setMockAdded] = useState([]);
+
     const data = [
         { id: 'DEP-01', name: 'Cardiology', head: 'Dr. Sarah Connor', staff: 24, status: 'Operational' },
         { id: 'DEP-02', name: 'Neurology', head: 'Dr. John Smith', staff: 18, status: 'Operational' },
         { id: 'DEP-03', name: 'Pediatrics', head: 'Dr. Emily Chen', staff: 15, status: 'Operational' },
     ];
+
+    const handleSave = (newData) => {
+        setMockAdded([...mockAdded, { id: `DEP-0${data.length + mockAdded.length + 1}`, name: newData.name, head: newData.head, staff: newData.staff, status: 'Operational' }]);
+    };
+
     const cols = [
         { header: 'Code', key: 'id' },
         { header: 'Department', render: (r) => <span className="font-bold">{r.name}</span> },
@@ -258,12 +349,19 @@ const DepartmentsManagement = () => {
         { header: 'Active Staff', key: 'staff' },
         { header: 'Status', render: (r) => <span className="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider">{r.status}</span> }
     ];
-    return <AdminListManager title="Hospital Departments" icon={Activity} data={data} columns={cols} loading={false} />;
+
+    const fields = [
+        { name: 'name', label: 'Department Name' },
+        { name: 'head', label: 'Head of Department' },
+        { name: 'staff', label: 'Initial Staff Count', type: 'number' }
+    ];
+
+    return <AdminListManager title="Hospital Departments" icon={Activity} data={[...mockAdded, ...data]} columns={cols} loading={false} formFields={fields} onSave={handleSave} />;
 };
 
-// --- 6. BILLING & PAYMENTS ---
 const BillingManagement = () => {
     const [data, setData] = useState([]);
+    const [mockAdded, setMockAdded] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -273,19 +371,31 @@ const BillingManagement = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    const handleSave = (newData) => {
+        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), patient: { name: newData.patientName }, date: new Date(), amount: parseFloat(newData.amount), status: newData.status }]);
+    };
+
     const cols = [
-        { header: 'Invoice', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Invoice', render: (r) => <span className="text-gray-500">{r._id.slice(-6).toUpperCase()}</span> },
         { header: 'Patient', render: (r) => r.patient?.name || 'Unknown' },
         { header: 'Issue Date', render: (r) => new Date(r.date).toLocaleDateString() },
-        { header: 'Amount', render: (r) => <span className="font-black">${r.amount.toFixed(2)}</span> },
+        { header: 'Amount', render: (r) => <span className="font-black">${r.amount?.toFixed(2) || '0.00'}</span> },
         { header: 'Status', render: (r) => <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${r.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{r.status}</span> }
     ];
-    return <AdminListManager title="Billing & Invoicing" icon={DollarSign} data={data} columns={cols} loading={loading} />;
+
+    const fields = [
+        { name: 'patientName', label: 'Patient Name' },
+        { name: 'description', label: 'Item/Service Description' },
+        { name: 'amount', label: 'Amount ($)', type: 'number' },
+        { name: 'status', label: 'Payment Status', type: 'select', options: ['Paid', 'Unpaid'] }
+    ];
+
+    return <AdminListManager title="Billing & Invoicing" icon={DollarSign} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
 };
 
-// --- 7. PRESCRIPTIONS ---
 const PrescriptionsManagement = () => {
     const [data, setData] = useState([]);
+    const [mockAdded, setMockAdded] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -295,19 +405,31 @@ const PrescriptionsManagement = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    const handleSave = (newData) => {
+        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), patient: { name: newData.patient }, doctor: { name: newData.doctor }, date: new Date(), medicines: new Array(parseInt(newData.items) || 1) }]);
+    };
+
     const cols = [
-        { header: 'RX Number', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'RX Number', render: (r) => <span className="text-gray-500">{r._id.slice(-6).toUpperCase()}</span> },
         { header: 'Patient', render: (r) => r.patient?.name || 'Unknown' },
         { header: 'Prescribing Doctor', render: (r) => <span className="font-bold">{r.doctor?.name || 'Unknown'}</span> },
         { header: 'Date', render: (r) => new Date(r.date).toLocaleDateString() },
         { header: 'Medications', render: (r) => r.medicines ? r.medicines.length : 0 }
     ];
-    return <AdminListManager title="Pharmacy & Prescriptions" icon={Pill} data={data} columns={cols} loading={loading} />;
+
+    const fields = [
+        { name: 'patient', label: 'Patient Name' },
+        { name: 'doctor', label: 'Doctor Issuing' },
+        { name: 'items', label: 'Number of Medications', type: 'number' },
+        { name: 'notes', label: 'Prescription Notes', type: 'textarea' }
+    ];
+
+    return <AdminListManager title="Pharmacy & Prescriptions" icon={Pill} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />;
 };
 
-// --- 8. REPORTS & ANALYTICS ---
 const ReportsManagement = () => {
     const [data, setData] = useState([]);
+    const [mockAdded, setMockAdded] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -317,8 +439,12 @@ const ReportsManagement = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    const handleSave = (newData) => {
+        setMockAdded([...mockAdded, { _id: Math.random().toString(36).substr(2, 6), reportName: newData.reportName, reportType: newData.type, patient: { name: newData.patient }, date: new Date(), fileUrl: 'new_report.pdf' }]);
+    };
+
     const cols = [
-        { header: 'Ref ID', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Ref ID', render: (r) => <span className="text-gray-500">{r._id.slice(-6).toUpperCase()}</span> },
         { header: 'Report Name', render: (r) => <span className="font-bold">{r.reportName}</span> },
         { header: 'Type', key: 'reportType' },
         { header: 'Patient', render: (r) => r.patient?.name || 'Unknown' },
@@ -326,12 +452,19 @@ const ReportsManagement = () => {
         { header: 'Attachment', render: (r) => r.fileUrl ? <a href="#" className="flex gap-2 items-center text-blue-600 font-bold hover:underline"><FileText size={16} /> View Data</a> : 'N/A' }
     ];
 
+    const fields = [
+        { name: 'reportName', label: 'Report Title' },
+        { name: 'type', label: 'Report Type', type: 'select', options: ['Laboratory Test', 'Radiology', 'Pathology'] },
+        { name: 'patient', label: 'Associated Patient Name' },
+        { name: 'file', label: 'Upload PDF Document', type: 'file' }
+    ];
+
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-emerald-900 mb-6 flex items-center gap-3">
                 <FileText className="text-emerald-500" size={28} /> Reports & Analytics
             </h2>
-            <AdminListManager title="Published Medical Reports" icon={FileText} data={data} columns={cols} loading={loading} />
+            <AdminListManager title="Published Medical Reports" icon={FileText} data={[...mockAdded, ...data]} columns={cols} loading={loading} formFields={fields} onSave={handleSave} />
         </div>
     );
 };
@@ -353,4 +486,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

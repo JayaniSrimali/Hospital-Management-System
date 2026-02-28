@@ -62,8 +62,12 @@ const Sidebar = ({ user, onLogout }) => {
                                 }`
                             }
                         >
-                            <link.icon size={20} className={({ isActive }) => isActive ? 'text-white' : 'text-emerald-500/80'} />
-                            <span className="text-sm tracking-wide">{link.label}</span>
+                            {({ isActive }) => (
+                                <>
+                                    <link.icon size={20} className={isActive ? 'text-white' : 'text-emerald-500/80'} />
+                                    <span className="text-sm tracking-wide">{link.label}</span>
+                                </>
+                            )}
                         </NavLink>
                     ))}
                 </nav>

@@ -24,10 +24,10 @@ const Login = ({ setUser }) => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100">
-            <div className="glass-card p-10 rounded-2xl shadow-xl w-full max-w-md">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100">
+            <div className="glass-card p-10 rounded-2xl shadow-xl w-full max-w-md border border-green-100">
                 <div className="flex flex-col items-center mb-8">
-                    <div className="bg-indigo-600 p-3 rounded-full mb-4 shadow-lg shadow-indigo-200">
+                    <div className="bg-green-600 p-3 rounded-full mb-4 shadow-lg shadow-green-200">
                         <Activity size={32} className="text-white" />
                     </div>
                     <h2 className="text-3xl font-bold text-gray-800 tracking-tight">Welcome Back</h2>
@@ -41,7 +41,7 @@ const Login = ({ setUser }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                         <input
                             type="email"
-                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="admin@hms.com"
@@ -52,7 +52,7 @@ const Login = ({ setUser }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                         <input
                             type="password"
-                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
@@ -61,7 +61,7 @@ const Login = ({ setUser }) => {
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-indigo-600 text-white p-3 rounded-xl font-semibold hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-md mt-4"
+                        className="w-full bg-green-600 text-white p-3 rounded-xl font-semibold hover:bg-green-700 active:scale-[0.98] transition-all shadow-md mt-4"
                     >
                         Sign In
                     </button>
@@ -69,7 +69,7 @@ const Login = ({ setUser }) => {
 
                 <p className="text-center mt-6 text-sm text-gray-600">
                     Don't have an account?{' '}
-                    <Link to="/register" className="text-indigo-600 font-semibold hover:underline">
+                    <Link to="/register" className="text-green-600 font-semibold hover:underline">
                         Register here
                     </Link>
                 </p>
@@ -80,7 +80,7 @@ const Login = ({ setUser }) => {
                         <span>Admin: admin@test.com</span>
                         <span>Doc: doc@test.com</span>
                         <span>Pat: pat@test.com</span>
-                        <span className="col-span-2 text-indigo-500 font-medium mt-1">Pass: 123456</span>
+                        <span className="col-span-2 text-green-600 font-medium mt-1">Pass: 123456</span>
                     </div>
                 </div>
             </div>

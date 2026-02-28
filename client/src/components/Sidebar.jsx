@@ -73,7 +73,7 @@ const Sidebar = ({ user, onLogout }) => {
             <div className="p-6 mt-auto bg-gradient-to-t from-[#060D0A] to-transparent border-t border-[#1A3A32]/30">
                 <div className="bg-[#132A24] rounded-2xl p-4 mb-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold shadow-inner">
-                        {user?.name?.charAt(0) || user?.role?.charAt(0).toUpperCase()}
+                        {user?.name?.charAt(0) || user?.role?.charAt(0)?.toUpperCase() || 'U'}
                     </div>
                     <div className="overflow-hidden">
                         <p className="text-sm font-bold text-white truncate">{user?.name || 'User'}</p>

@@ -8,26 +8,30 @@ import ForgotPassword from './pages/ForgotPassword';
 import AdminDashboard from './pages/admin/Dashboard';
 import DoctorDashboard from './pages/doctor/Dashboard';
 import PatientDashboard from './pages/patient/Dashboard';
+const ProtectedRoute = ({ user, children, role }) => {
+  if (!user) return <Navigate to="/login" />;
+  if (role && user.role !== role) return <Navigate to="/" />;
+  return children;
+};
 
 function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
-    if (userInfo) {
-      setUser(JSON.parse(userInfo));
+    try {
+      const userInfo = localStorage.getItem('userInfo');
+      if (userInfo) {
+        setUser(JSON.parse(userInfo));
+      }
+    } catch (err) {
+      console.error("Failed to parse userInfo", err);
+      localStorage.removeItem('userInfo');
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('userInfo');
     setUser(null);
-  };
-
-  const ProtectedRoute = ({ children, role }) => {
-    if (!user) return <Navigate to="/login" />;
-    if (role && user.role !== role) return <Navigate to="/" />;
-    return children;
   };
 
   return (
@@ -45,7 +49,7 @@ function App() {
               <Route
                 path="/admin/*"
                 element={
-                  <ProtectedRoute role="admin">
+                  <ProtectedRoute user={user} role="admin">
                     <AdminDashboard />
                   </ProtectedRoute>
                 }
@@ -53,7 +57,7 @@ function App() {
               <Route
                 path="/doctor/*"
                 element={
-                  <ProtectedRoute role="doctor">
+                  <ProtectedRoute user={user} role="doctor">
                     <DoctorDashboard user={user} />
                   </ProtectedRoute>
                 }
@@ -61,7 +65,7 @@ function App() {
               <Route
                 path="/patient/*"
                 element={
-                  <ProtectedRoute role="patient">
+                  <ProtectedRoute user={user} role="patient">
                     <PatientDashboard user={user} />
                   </ProtectedRoute>
                 }

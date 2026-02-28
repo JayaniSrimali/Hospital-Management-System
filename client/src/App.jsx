@@ -16,6 +16,7 @@ const ProtectedRoute = ({ user, children, role }) => {
 
 function App() {
   const [user, setUser] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -34,13 +35,22 @@ function App() {
     setUser(null);
   };
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   return (
     <Router>
-      <div className="flex h-screen bg-gray-50 font-sans">
-        {user && <Sidebar user={user} onLogout={handleLogout} />}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Navbar user={user} />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+      <div className="flex h-screen bg-gray-50 font-sans relative">
+        {user && (
+          <Sidebar
+            user={user}
+            onLogout={handleLogout}
+            isOpen={isSidebarOpen}
+            toggleSidebar={toggleSidebar}
+          />
+        )}
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          <Navbar user={user} onLogout={handleLogout} toggleSidebar={toggleSidebar} />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 md:p-6 pb-20 md:pb-6">
             <Routes>
               <Route path="/login" element={<Login setUser={setUser} />} />
               <Route path="/register" element={<Register setUser={setUser} />} />

@@ -30,7 +30,7 @@ const Login = ({ setUser }) => {
             <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-emerald-200/40 blur-[120px] pointer-events-none"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-teal-200/40 blur-[120px] pointer-events-none"></div>
 
-            <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white/80 backdrop-blur-2xl rounded-3xl shadow-2xl border border-gray-100 overflow-hidden relative z-10 mx-6">
+            <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white/80 backdrop-blur-2xl rounded-[2rem] sm:rounded-3xl shadow-2xl border border-gray-100 overflow-hidden relative z-10 mx-4 sm:mx-6">
 
                 {/* Left Side - Branding & Logo */}
                 <div

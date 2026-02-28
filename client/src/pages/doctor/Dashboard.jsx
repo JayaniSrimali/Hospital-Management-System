@@ -23,7 +23,7 @@ const DoctorHome = ({ user }) => {
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-md p-6 text-white flex items-center justify-between">
                     <div>
                         <p className="text-indigo-100 font-medium">My Appointments</p>
@@ -73,8 +73,8 @@ const DoctorHome = ({ user }) => {
                                         <td className="p-4">{app.time}</td>
                                         <td className="p-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${app.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                    app.status === 'Approved' ? 'bg-blue-100 text-blue-700' :
-                                                        app.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                app.status === 'Approved' ? 'bg-blue-100 text-blue-700' :
+                                                    app.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                                 }`}>
                                                 {app.status}
                                             </span>

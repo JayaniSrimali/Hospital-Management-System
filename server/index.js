@@ -28,6 +28,7 @@ app.use('/api/patients', require('./routes/patients'));
 app.use('/api/appointments', require('./routes/appointments'));
 app.use('/api/prescriptions', require('./routes/prescriptions'));
 app.use('/api/billing', require('./routes/billing'));
+app.use('/api/reports', require('./routes/reports'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, UserCircle, Settings, LogOut, CheckCircle, AlertCircle, Clock, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, UserCircle, Settings, LogOut, CheckCircle, AlertCircle, Clock, ChevronDown, Menu } from 'lucide-react';
 
-const Navbar = ({ user }) => {
+const Navbar = ({ user, onLogout, toggleSidebar }) => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
+    const navigate = useNavigate();
 
     // Ref for closing dropdowns when clicking outside
     const navRef = useRef(null);
@@ -22,9 +24,17 @@ const Navbar = ({ user }) => {
     if (!user) return null;
 
     return (
-        <header ref={navRef} className="bg-white/80 backdrop-blur-md shadow-sm h-20 w-full flex items-center justify-between px-8 z-20 sticky top-0 border-b border-emerald-100/50 transition-all">
-            <div className="text-xl font-bold text-emerald-900 tracking-tight flex items-center gap-2">
-                Welcome back, <span className="text-emerald-600">{user.name}</span>
+        <header ref={navRef} className="bg-white/80 backdrop-blur-md shadow-sm h-20 w-full flex items-center justify-between px-4 md:px-8 z-[90] sticky top-0 border-b border-emerald-100/50 transition-all">
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={toggleSidebar}
+                    className="lg:hidden p-2 rounded-xl text-emerald-900 hover:bg-emerald-50 transition-colors"
+                >
+                    <Menu size={24} />
+                </button>
+                <div className="text-lg md:text-xl font-bold text-emerald-900 tracking-tight flex items-center gap-2">
+                    <span className="hidden sm:inline">Welcome back,</span> <span className="text-emerald-600 truncate max-w-[120px] md:max-w-none">{user.name}</span>
+                </div>
             </div>
 
             <div className="flex items-center gap-5">
@@ -70,7 +80,10 @@ const Navbar = ({ user }) => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="p-3 border-t border-emerald-50 text-center bg-gray-50/50 hover:bg-emerald-50 cursor-pointer transition-colors">
+                            <div
+                                onClick={() => { setShowNotifications(false); navigate(`/${user.role}/notifications`); }}
+                                className="p-3 border-t border-emerald-50 text-center bg-gray-50/50 hover:bg-emerald-50 cursor-pointer transition-colors"
+                            >
                                 <span className="text-xs font-bold text-emerald-700">View All Notifications</span>
                             </div>
                         </div>
@@ -117,17 +130,29 @@ const Navbar = ({ user }) => {
                                 </span>
                             </div>
                             <div className="p-2">
-                                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-emerald-800 hover:bg-emerald-50 hover:text-emerald-900 rounded-xl transition-colors">
+                                <button
+                                    onClick={() => { setShowProfile(false); navigate(`/${user.role}/profile`); }}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-emerald-800 hover:bg-emerald-50 hover:text-emerald-900 rounded-xl transition-colors"
+                                >
                                     <UserCircle size={18} className="text-emerald-500" />
                                     My Profile
                                 </button>
-                                <button className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-emerald-800 hover:bg-emerald-50 hover:text-emerald-900 rounded-xl transition-colors">
+                                <button
+                                    onClick={() => { setShowProfile(false); navigate(`/${user.role}/settings`); }}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-emerald-800 hover:bg-emerald-50 hover:text-emerald-900 rounded-xl transition-colors"
+                                >
                                     <Settings size={18} className="text-emerald-500" />
                                     Account Settings
                                 </button>
                                 <div className="h-px bg-emerald-50 my-2 mx-2"></div>
                                 <button
-                                    onClick={() => window.location.href = '/login'}
+                                    onClick={() => {
+                                        if (onLogout) onLogout();
+                                        else {
+                                            localStorage.removeItem('userInfo');
+                                            window.location.href = '/login';
+                                        }
+                                    }}
                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 rounded-xl transition-colors"
                                 >
                                     <LogOut size={18} />

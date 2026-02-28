@@ -514,64 +514,146 @@ const MedicalReports = () => (
     </div>
 );
 
-const MyProfile = ({ user }) => (
-    <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-emerald-900 mb-6">Patient Profile</h2>
+const MyProfile = ({ user }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [profileData, setProfileData] = useState({
+        name: user?.name || 'Patient User',
+        email: user?.email || 'patient@medicare.com',
+        phone: '+1 (555) 123-4567',
+        dob: '1988-05-15',
+        address: '123 Emerald Avenue, Suite 4B, New York, NY 10001',
+        emergencyContact: 'John Smith - +1 (555) 987-6543 (Husband)'
+    });
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-8 text-center md:col-span-1 border-t-4 border-t-emerald-500">
-                <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-5xl shadow-inner mb-4">
-                    {user?.name?.charAt(0) || 'U'}
-                </div>
-                <h3 className="text-xl font-extrabold text-emerald-900">{user?.name || 'Patient User'}</h3>
-                <p className="text-emerald-600 font-medium mb-4">{user?.email || 'patient@medicare.com'}</p>
-                <div className="inline-flex py-1 px-4 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700 capitalize border border-emerald-200">
-                    {user?.role || 'Patient'} Account
-                </div>
-            </div>
+    const handleSave = () => {
+        setIsEditing(false);
+        // Add actual API call here to save modified details later.
+    };
 
-            <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-8 md:col-span-2">
-                <h3 className="text-lg font-bold text-emerald-900 mb-6 border-b border-emerald-50 pb-3 flex justify-between items-center">
-                    Personal Information
-                    <button className="text-sm text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors">Edit</button>
-                </h3>
+    return (
+        <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-emerald-900 mb-6">Patient Profile</h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Full Name</label>
-                        <div className="p-3 bg-emerald-50/30 rounded-xl border border-emerald-100 text-emerald-900 font-medium shadow-sm">{user?.name || 'Patient User'}</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-8 text-center md:col-span-1 border-t-4 border-t-emerald-500">
+                    <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-5xl shadow-inner mb-4">
+                        {profileData.name.charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                        <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Email Address</label>
-                        <div className="p-3 bg-emerald-50/30 rounded-xl border border-emerald-100 text-emerald-900 font-medium shadow-sm">{user?.email || 'patient@medicare.com'}</div>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Phone Number</label>
-                        <div className="p-3 bg-emerald-50/30 rounded-xl border border-emerald-100 text-emerald-900 font-medium shadow-sm">+1 (555) 123-4567</div>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Date of Birth</label>
-                        <div className="p-3 bg-emerald-50/30 rounded-xl border border-emerald-100 text-emerald-900 font-medium shadow-sm">May 15, 1988</div>
-                    </div>
-                    <div className="sm:col-span-2">
-                        <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Residential Address</label>
-                        <div className="p-3 bg-emerald-50/30 rounded-xl border border-emerald-100 text-emerald-900 font-medium shadow-sm">123 Emerald Avenue, Suite 4B, New York, NY 10001</div>
-                    </div>
-                    <div className="sm:col-span-2">
-                        <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Emergency Contact</label>
-                        <div className="p-3 bg-emerald-50/30 rounded-xl border border-emerald-100 text-emerald-900 font-medium shadow-sm">John Smith - +1 (555) 987-6543 (Husband)</div>
+                    <h3 className="text-xl font-extrabold text-emerald-900">{profileData.name}</h3>
+                    <p className="text-emerald-600 font-medium mb-4">{profileData.email}</p>
+                    <div className="inline-flex py-1 px-4 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700 capitalize border border-emerald-200">
+                        {user?.role || 'Patient'} Account
                     </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-emerald-50 flex justify-end">
-                    <button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 rounded-xl font-bold shadow-md transition-all active:scale-95">
-                        Save Changes
-                    </button>
+                <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-8 md:col-span-2">
+                    <h3 className="text-lg font-bold text-emerald-900 mb-6 border-b border-emerald-50 pb-3 flex justify-between items-center">
+                        Personal Information
+                        <button
+                            onClick={() => setIsEditing(!isEditing)}
+                            className={`text-sm font-bold px-4 py-1.5 rounded-lg transition-colors ${isEditing ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'bg-emerald-50 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100'}`}
+                        >
+                            {isEditing ? 'Cancel' : 'Edit Profile'}
+                        </button>
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Full Name</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.name}
+                                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.name}</div>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Email Address</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.email}
+                                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.email}</div>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Phone Number</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.phone}
+                                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.phone}</div>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Date of Birth</label>
+                            {isEditing ? (
+                                <input
+                                    type="date"
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.dob}
+                                    onChange={(e) => setProfileData({ ...profileData, dob: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{new Date(profileData.dob).toLocaleDateString()}</div>
+                            )}
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Residential Address</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.address}
+                                    onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.address}</div>
+                            )}
+                        </div>
+                        <div className="sm:col-span-2">
+                            <label className="block text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">Emergency Contact</label>
+                            {isEditing ? (
+                                <input
+                                    className="w-full p-3 bg-white rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-emerald-900 font-semibold shadow-sm transition-all"
+                                    value={profileData.emergencyContact}
+                                    onChange={(e) => setProfileData({ ...profileData, emergencyContact: e.target.value })}
+                                />
+                            ) : (
+                                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-emerald-900 font-medium">{profileData.emergencyContact}</div>
+                            )}
+                        </div>
+                    </div>
+
+                    {isEditing && (
+                        <div className="mt-8 pt-6 border-t border-emerald-50 flex justify-end gap-4 slide-down">
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="px-6 py-3 text-emerald-700 hover:bg-emerald-50 rounded-xl font-bold transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 rounded-xl font-bold shadow-md transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                <CheckCircle size={18} /> Update Profile
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const Notifications = () => (
     <div className="space-y-6">

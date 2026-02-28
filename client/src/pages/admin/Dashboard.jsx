@@ -118,6 +118,7 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
     const [formData, setFormData] = useState({});
     const [editingId, setEditingId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [recordToDelete, setRecordToDelete] = useState(null);
 
     const handleSave = (e) => {
         e.preventDefault();
@@ -129,6 +130,13 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
         setIsModalOpen(false);
         setFormData({});
         setEditingId(null);
+    };
+
+    const confirmDelete = () => {
+        if (onDelete && recordToDelete) {
+            onDelete(recordToDelete);
+        }
+        setRecordToDelete(null);
     };
 
     const filteredData = data.filter(row => {
@@ -219,7 +227,7 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                                         <td className="py-4 px-6 text-right">
                                             <div className="flex justify-end gap-2 transition-opacity duration-300">
                                                 <button onClick={() => handleEditClick(row)} className="p-1.5 text-blue-600 bg-blue-50/50 hover:bg-blue-100 rounded-lg transition-colors shadow-sm"><Edit size={16} /></button>
-                                                <button onClick={() => onDelete && onDelete(row)} className="p-1.5 text-rose-600 bg-rose-50/50 hover:bg-rose-100 rounded-lg transition-colors shadow-sm"><Trash size={16} /></button>
+                                                <button onClick={() => onDelete && setRecordToDelete(row)} className="p-1.5 text-rose-600 bg-rose-50/50 hover:bg-rose-100 rounded-lg transition-colors shadow-sm"><Trash size={16} /></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -232,6 +240,24 @@ const AdminListManager = ({ title, icon: Icon, data, columns, loading, formField
                     <div className="p-12 text-center text-emerald-500 font-medium">No records found.</div>
                 )}
             </div>
+
+            {recordToDelete && (
+                <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-300">
+                        <div className="bg-gradient-to-br from-rose-800 to-red-900 p-8 text-white relative flex flex-col items-center text-center">
+                            <div className="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-6 backdrop-blur-xl shadow-inner">
+                                <Trash size={32} className="text-rose-100" />
+                            </div>
+                            <h3 className="text-2xl font-black tracking-tight mb-2">Delete Record?</h3>
+                            <p className="text-rose-200 font-medium">This action cannot be undone. Are you completely sure you want to remove this data?</p>
+                        </div>
+                        <div className="p-6 bg-gray-50 flex gap-3">
+                            <button onClick={() => setRecordToDelete(null)} className="flex-1 py-3.5 bg-white text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors shadow-sm">Cancel</button>
+                            <button onClick={confirmDelete} className="flex-1 py-3.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-colors shadow-md shadow-rose-600/20 active:scale-95">Yes, Delete</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {isModalOpen && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">

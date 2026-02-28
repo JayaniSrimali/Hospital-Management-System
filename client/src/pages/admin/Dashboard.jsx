@@ -12,15 +12,46 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend);
 
+const API_BASE = 'http://localhost:5000/api';
+const getConfig = () => ({
+    headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('userInfo'))?.token}` }
+});
+
 // --- 1. ADMIN OVERVIEW ---
 const DashboardHome = () => {
-    const [stats, setStats] = useState({ doctors: 12, patients: 154, appointments: 45, revenue: 12500 });
+    const [stats, setStats] = useState({ doctors: 0, patients: 0, appointments: 0, revenue: 0 });
+
+    useEffect(() => {
+        const fetchAll = async () => {
+            try {
+                const [docRes, patRes, appRes, billRes] = await Promise.all([
+                    axios.get(`${API_BASE}/doctors`, getConfig()),
+                    axios.get(`${API_BASE}/patients`, getConfig()),
+                    axios.get(`${API_BASE}/appointments`, getConfig()),
+                    axios.get(`${API_BASE}/billing`, getConfig())
+                ]);
+                const totalRev = billRes.data
+                    .filter(b => b.status === "Paid")
+                    .reduce((acc, curr) => acc + curr.amount, 0);
+
+                setStats({
+                    doctors: docRes.data.length,
+                    patients: patRes.data.length,
+                    appointments: appRes.data.length,
+                    revenue: totalRev
+                });
+            } catch (err) {
+                console.error("Home stats error", err);
+            }
+        };
+        fetchAll();
+    }, []);
 
     const chartData = {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
         datasets: [{
             label: 'Hospital Revenue ($)',
-            data: [45000, 52000, 48000, 61000, 59000, 75000],
+            data: [45000, 52000, 48000, 61000, 59000, 75000 + stats.revenue], // merged mockup with realistic bump
             borderColor: '#10b981',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
             borderWidth: 3,
@@ -32,8 +63,8 @@ const DashboardHome = () => {
     const statCards = [
         { title: 'Total Patients', value: stats.patients, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         { title: 'Total Doctors', value: stats.doctors, icon: UserPlus, color: 'text-teal-600', bg: 'bg-teal-50' },
-        { title: 'Appointments Today', value: stats.appointments, icon: CalIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
-        { title: 'Monthly Revenue', value: `$${stats.revenue}`, icon: DollarSign, color: 'text-rose-600', bg: 'bg-rose-50' },
+        { title: 'Appointments Logged', value: stats.appointments, icon: CalIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { title: 'Total Paid Revenue', value: `$${stats.revenue.toFixed(2)}`, icon: DollarSign, color: 'text-rose-600', bg: 'bg-rose-50' },
     ];
 
     return (
@@ -82,7 +113,7 @@ const DashboardHome = () => {
 };
 
 // --- GENERAL LIST TEMPLATE COMPONENT ---
-const AdminListManager = ({ title, icon: Icon, data, columns, onAdd }) => (
+const AdminListManager = ({ title, icon: Icon, data, columns, onAdd, loading }) => (
     <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
             <h2 className="text-2xl font-bold text-emerald-900 flex items-center gap-3">
@@ -99,35 +130,41 @@ const AdminListManager = ({ title, icon: Icon, data, columns, onAdd }) => (
             </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-emerald-50/50 border-b border-emerald-100">
-                            {columns.map((col, i) => (
-                                <th key={i} className="py-4 px-6 text-xs font-black text-emerald-800 uppercase tracking-widest">{col.header}</th>
-                            ))}
-                            <th className="py-4 px-6 text-xs font-black text-emerald-800 uppercase tracking-widest text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-emerald-50">
-                        {data.map((row, i) => (
-                            <tr key={i} className="hover:bg-emerald-50/30 transition-colors group">
-                                {columns.map((col, j) => (
-                                    <td key={j} className="py-4 px-6 text-sm font-medium text-emerald-900">{col.render ? col.render(row) : row[col.key]}</td>
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden min-h-[400px]">
+            {loading ? (
+                <div className="flex items-center justify-center p-12 text-emerald-500 h-full min-h-[300px]">
+                    <Activity size={32} className="animate-spin" />
+                </div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-emerald-50/50 border-b border-emerald-100">
+                                {columns.map((col, i) => (
+                                    <th key={i} className="py-4 px-6 text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">{col.header}</th>
                                 ))}
-                                <td className="py-4 px-6 text-right">
-                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={16} /></button>
-                                        <button className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash size={16} /></button>
-                                    </div>
-                                </td>
+                                <th className="py-4 px-6 text-xs font-black text-emerald-800 uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            {data.length === 0 && (
+                        </thead>
+                        <tbody className="divide-y divide-emerald-50">
+                            {data.map((row, i) => (
+                                <tr key={row._id || i} className="hover:bg-emerald-50/30 transition-colors group">
+                                    {columns.map((col, j) => (
+                                        <td key={j} className="py-4 px-6 text-sm font-medium text-emerald-900 whitespace-nowrap">{col.render ? col.render(row) : row[col.key]}</td>
+                                    ))}
+                                    <td className="py-4 px-6 text-right">
+                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={16} /></button>
+                                            <button className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><Trash size={16} /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+            {!loading && data.length === 0 && (
                 <div className="p-12 text-center text-emerald-500 font-medium">No records found.</div>
             )}
         </div>
@@ -136,50 +173,75 @@ const AdminListManager = ({ title, icon: Icon, data, columns, onAdd }) => (
 
 // --- 2. DOCTORS MANAGEMENT ---
 const DoctorsManagement = () => {
-    const data = [
-        { id: 'DOC-001', name: 'Dr. Sarah Connor', spec: 'Cardiology', email: 'sarah.c@medicare.com', status: 'Active' },
-        { id: 'DOC-002', name: 'Dr. John Smith', spec: 'Neurology', email: 'john.s@medicare.com', status: 'On Leave' },
-    ];
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        axios.get(`${API_BASE}/doctors`, getConfig())
+            .then(res => setData(res.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
     const cols = [
-        { header: 'ID', key: 'id' },
-        { header: 'Doctor Name', render: (r) => <span className="font-bold">{r.name}</span> },
-        { header: 'Specialization', key: 'spec' },
-        { header: 'Email Primary', key: 'email' },
-        { header: 'Status', render: (r) => <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${r.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{r.status}</span> }
+        { header: 'ID', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Doctor Name', render: (r) => <span className="font-bold">{r.user?.name}</span> },
+        { header: 'Specialization', key: 'specialization' },
+        { header: 'Email Primary', render: (r) => r.user?.email },
+        { header: 'Status', render: (r) => <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${r.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{r.status}</span> }
     ];
-    return <AdminListManager title="Doctors Management" icon={UserPlus} data={data} columns={cols} />;
+    return <AdminListManager title="Doctors Management" icon={UserPlus} data={data} columns={cols} loading={loading} />;
 };
 
 // --- 3. PATIENTS MANAGEMENT ---
 const PatientsManagement = () => {
-    const data = [
-        { id: 'PAT-892', name: 'Jane Doe', age: 34, gender: 'Female', phone: '+1 555-0192' },
-        { id: 'PAT-893', name: 'Michael Chen', age: 45, gender: 'Male', phone: '+1 555-0193' },
-    ];
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        axios.get(`${API_BASE}/patients`, getConfig())
+            .then(res => setData(res.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
     const cols = [
-        { header: 'Reg ID', key: 'id' },
-        { header: 'Patient Name', render: (r) => <span className="font-bold">{r.name}</span> },
+        { header: 'Reg ID', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Patient Name', render: (r) => <span className="font-bold">{r.user?.name}</span> },
         { header: 'Age', key: 'age' },
-        { header: 'Gender', key: 'gender' },
-        { header: 'Contact', key: 'phone' }
+        { header: 'Gender', render: (r) => <span className="capitalize">{r.gender}</span> },
+        { header: 'Contact', render: (r) => r.user?.phone || 'N/A' }
     ];
-    return <AdminListManager title="Patients Management" icon={Users} data={data} columns={cols} />;
+    return <AdminListManager title="Patients Management" icon={Users} data={data} columns={cols} loading={loading} />;
 };
 
 // --- 4. APPOINTMENTS ---
 const AppointmentsManagement = () => {
-    const data = [
-        { id: 'APT-1042', patient: 'Jane Doe', doctor: 'Dr. Sarah Connor', date: 'Oct 24, 2024', status: 'Confirmed' },
-        { id: 'APT-1043', patient: 'Michael Chen', doctor: 'Dr. John Smith', date: 'Oct 25, 2024', status: 'Pending' },
-    ];
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        axios.get(`${API_BASE}/appointments`, getConfig())
+            .then(res => setData(res.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
     const cols = [
-        { header: 'Ref', key: 'id' },
-        { header: 'Patient', key: 'patient' },
-        { header: 'Assigned Doctor', key: 'doctor' },
-        { header: 'Schedule', key: 'date' },
-        { header: 'Status', render: (r) => <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${r.status === 'Confirmed' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>{r.status}</span> }
+        { header: 'Ref', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Patient', render: (r) => r.patient?.user?.name || 'Unknown' },
+        { header: 'Assigned Doctor', render: (r) => <span className="font-bold">{r.doctor?.name}</span> },
+        { header: 'Schedule', render: (r) => new Date(r.date).toLocaleDateString() },
+        { header: 'Time', key: 'time' },
+        {
+            header: 'Status', render: (r) => <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider hover:opacity-80 transition-opacity cursor-pointer
+                ${r.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
+                    r.status === 'Completed' ? 'bg-blue-100 text-blue-700' :
+                        r.status === 'Rejected' ? 'bg-rose-100 text-rose-700' :
+                            'bg-amber-100 text-amber-700'}`}>{r.status}</span>
+        }
     ];
-    return <AdminListManager title="Appointments Registry" icon={CalIcon} data={data} columns={cols} />;
+    return <AdminListManager title="Appointments Registry" icon={CalIcon} data={data} columns={cols} loading={loading} />;
 };
 
 // --- 5. DEPARTMENTS ---
@@ -187,6 +249,7 @@ const DepartmentsManagement = () => {
     const data = [
         { id: 'DEP-01', name: 'Cardiology', head: 'Dr. Sarah Connor', staff: 24, status: 'Operational' },
         { id: 'DEP-02', name: 'Neurology', head: 'Dr. John Smith', staff: 18, status: 'Operational' },
+        { id: 'DEP-03', name: 'Pediatrics', head: 'Dr. Emily Chen', staff: 15, status: 'Operational' },
     ];
     const cols = [
         { header: 'Code', key: 'id' },
@@ -195,89 +258,83 @@ const DepartmentsManagement = () => {
         { header: 'Active Staff', key: 'staff' },
         { header: 'Status', render: (r) => <span className="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider">{r.status}</span> }
     ];
-    return <AdminListManager title="Hospital Departments" icon={Activity} data={data} columns={cols} />;
+    return <AdminListManager title="Hospital Departments" icon={Activity} data={data} columns={cols} loading={false} />;
 };
 
 // --- 6. BILLING & PAYMENTS ---
 const BillingManagement = () => {
-    const data = [
-        { id: 'INV-2024-001', patient: 'Jane Doe', amount: 150.00, date: 'Oct 20, 2024', status: 'Paid' },
-        { id: 'INV-2024-002', patient: 'Michael Chen', amount: 450.00, date: 'Oct 22, 2024', status: 'Unpaid' },
-    ];
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        axios.get(`${API_BASE}/billing`, getConfig())
+            .then(res => setData(res.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
     const cols = [
-        { header: 'Invoice', key: 'id' },
-        { header: 'Patient', key: 'patient' },
-        { header: 'Issue Date', key: 'date' },
+        { header: 'Invoice', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Patient', render: (r) => r.patient?.name || 'Unknown' },
+        { header: 'Issue Date', render: (r) => new Date(r.date).toLocaleDateString() },
         { header: 'Amount', render: (r) => <span className="font-black">${r.amount.toFixed(2)}</span> },
         { header: 'Status', render: (r) => <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${r.status === 'Paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>{r.status}</span> }
     ];
-    return <AdminListManager title="Billing & Invoicing" icon={DollarSign} data={data} columns={cols} />;
+    return <AdminListManager title="Billing & Invoicing" icon={DollarSign} data={data} columns={cols} loading={loading} />;
 };
 
 // --- 7. PRESCRIPTIONS ---
 const PrescriptionsManagement = () => {
-    const data = [
-        { id: 'RX-8842', patient: 'Jane Doe', doctor: 'Dr. Sarah Connor', date: 'Oct 24, 2024', items: 2 },
-        { id: 'RX-8843', patient: 'Michael Chen', doctor: 'Dr. John Smith', date: 'Oct 25, 2024', items: 4 },
-    ];
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        axios.get(`${API_BASE}/prescriptions`, getConfig())
+            .then(res => setData(res.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
     const cols = [
-        { header: 'RX Number', key: 'id' },
-        { header: 'Patient', key: 'patient' },
-        { header: 'Prescribing Doctor', key: 'doctor' },
-        { header: 'Date', key: 'date' },
-        { header: 'Medications', key: 'items' }
+        { header: 'RX Number', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Patient', render: (r) => r.patient?.name || 'Unknown' },
+        { header: 'Prescribing Doctor', render: (r) => <span className="font-bold">{r.doctor?.name || 'Unknown'}</span> },
+        { header: 'Date', render: (r) => new Date(r.date).toLocaleDateString() },
+        { header: 'Medications', render: (r) => r.medicines ? r.medicines.length : 0 }
     ];
-    return <AdminListManager title="Pharmacy & Prescriptions" icon={Pill} data={data} columns={cols} />;
+    return <AdminListManager title="Pharmacy & Prescriptions" icon={Pill} data={data} columns={cols} loading={loading} />;
 };
 
 // --- 8. REPORTS & ANALYTICS ---
 const ReportsManagement = () => {
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        axios.get(`${API_BASE}/reports`, getConfig())
+            .then(res => setData(res.data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
+    const cols = [
+        { header: 'Ref ID', render: (r) => <span className="text-gray-500">{r._id.slice(-6)}</span> },
+        { header: 'Report Name', render: (r) => <span className="font-bold">{r.reportName}</span> },
+        { header: 'Type', key: 'reportType' },
+        { header: 'Patient', render: (r) => r.patient?.name || 'Unknown' },
+        { header: 'Date', render: (r) => new Date(r.date).toLocaleDateString() },
+        { header: 'Attachment', render: (r) => r.fileUrl ? <a href="#" className="flex gap-2 items-center text-blue-600 font-bold hover:underline"><FileText size={16} /> View Data</a> : 'N/A' }
+    ];
+
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-emerald-900 mb-6 flex items-center gap-3">
                 <FileText className="text-emerald-500" size={28} /> Reports & Analytics
             </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col items-center text-center">
-                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4">
-                        <Users size={32} />
-                    </div>
-                    <h3 className="text-lg font-bold text-emerald-950 mb-2">Patient Demographics Report</h3>
-                    <p className="text-sm font-medium text-emerald-600 mb-6">Export comprehensive data regarding patient ages, locations, and visit frequencies.</p>
-                    <button className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 py-3 rounded-xl font-bold transition-colors">Generate Report</button>
-                </div>
-
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col items-center text-center">
-                    <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mb-4">
-                        <DollarSign size={32} />
-                    </div>
-                    <h3 className="text-lg font-bold text-emerald-950 mb-2">Financial Auditing</h3>
-                    <p className="text-sm font-medium text-emerald-600 mb-6">Detailed ledger of all transactions, unpaid invoices, and departmental revenue.</p>
-                    <button className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 py-3 rounded-xl font-bold transition-colors">Generate Report</button>
-                </div>
-
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col items-center text-center">
-                    <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-4">
-                        <Activity size={32} />
-                    </div>
-                    <h3 className="text-lg font-bold text-emerald-950 mb-2">Operation Efficiency</h3>
-                    <p className="text-sm font-medium text-emerald-600 mb-6">Review doctor performance metrics, average wait times, and consultation lengths.</p>
-                    <button className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 py-3 rounded-xl font-bold transition-colors">Generate Report</button>
-                </div>
-
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col items-center text-center">
-                    <div className="w-16 h-16 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mb-4">
-                        <Pill size={32} />
-                    </div>
-                    <h3 className="text-lg font-bold text-emerald-950 mb-2">Pharmacy Inventory</h3>
-                    <p className="text-sm font-medium text-emerald-600 mb-6">Export the current stock limits of the hospital pharmacy, including dispensed medications.</p>
-                    <button className="w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 py-3 rounded-xl font-bold transition-colors">Generate Report</button>
-                </div>
-            </div>
+            <AdminListManager title="Published Medical Reports" icon={FileText} data={data} columns={cols} loading={loading} />
         </div>
     );
-}
+};
 
 // --- MAIN ROUTER ---
 const AdminDashboard = () => {

@@ -1117,79 +1117,107 @@ const DoctorProfile = ({ user }) => {
 };
 
 // --- 9. ACCOUNT SETTINGS ---
-const DoctorSettings = () => (
-    <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-emerald-900 mb-6">Account Settings</h2>
+const DoctorSettings = () => {
+    const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+    const [toast, setToast] = useState(null);
+    const [saving, setSaving] = useState(false);
 
-        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden">
-            <div className="p-8 border-b border-emerald-50">
-                <h3 className="text-xl font-extrabold text-emerald-900 mb-2 flex items-center gap-3">
-                    <ShieldCheck size={24} className="text-emerald-500" /> Security & Password
-                </h3>
-                <p className="text-emerald-600 text-sm mb-6 font-medium">Ensure your account is using a long, random password to stay secure.</p>
+    const handlePasswordUpdate = async (e) => {
+        e.preventDefault();
+        if (passwords.new !== passwords.confirm) {
+            setToast({ message: "New passwords do not match!", type: 'error' });
+            return;
+        }
 
-                <div className="space-y-4 max-w-md">
-                    <div>
-                        <label className="block text-sm font-bold text-emerald-800 mb-1">Current Password</label>
-                        <input type="password" placeholder="••••••••" className="w-full p-3 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900 bg-emerald-50/30" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-bold text-emerald-800 mb-1">New Password</label>
-                        <input type="password" placeholder="••••••••" className="w-full p-3 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900 bg-emerald-50/30" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-bold text-emerald-800 mb-1">Confirm New Password</label>
-                        <input type="password" placeholder="••••••••" className="w-full p-3 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900 bg-emerald-50/30" />
-                    </div>
-                    <div className="pt-2">
-                        <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95">
-                            Update Password
-                        </button>
+        setSaving(true);
+        try {
+            const token = JSON.parse(localStorage.getItem('userInfo'))?.token;
+            await axios.put(`http://localhost:5000/api/auth/profile`, { password: passwords.new }, { headers: { Authorization: `Bearer ${token}` } });
+            setPasswords({ current: '', new: '', confirm: '' });
+            setToast({ message: 'Password updated successfully!', type: 'success' });
+        } catch (err) {
+            console.error(err);
+            setToast({ message: 'Failed to update password. Please try again.', type: 'error' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-emerald-900 mb-6">Account Settings</h2>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden">
+                <div className="p-8 border-b border-emerald-50">
+                    <h3 className="text-xl font-extrabold text-emerald-900 mb-2 flex items-center gap-3">
+                        <ShieldCheck size={24} className="text-emerald-500" /> Security & Password
+                    </h3>
+                    <p className="text-emerald-600 text-sm mb-6 font-medium">Ensure your account is using a long, random password to stay secure.</p>
+
+                    <form onSubmit={handlePasswordUpdate} className="space-y-4 max-w-md">
+                        <div>
+                            <label className="block text-sm font-bold text-emerald-800 mb-1">Current Password</label>
+                            <input type="password" placeholder="••••••••" required className="w-full p-3 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900 bg-emerald-50/30" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-emerald-800 mb-1">New Password</label>
+                            <input type="password" placeholder="••••••••" required className="w-full p-3 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900 bg-emerald-50/30" value={passwords.new} onChange={(e) => setPasswords({ ...passwords, new: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-emerald-800 mb-1">Confirm New Password</label>
+                            <input type="password" placeholder="••••••••" required className="w-full p-3 border border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none text-emerald-900 bg-emerald-50/30" value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} />
+                        </div>
+                        <div className="pt-2">
+                            <button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95">
+                                {saving ? "Updating..." : "Update Password"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div className="p-8 border-b border-emerald-50">
+                    <h3 className="text-xl font-extrabold text-emerald-900 mb-2 flex items-center gap-3">
+                        <Bell size={24} className="text-emerald-500" /> Notification Preferences
+                    </h3>
+                    <p className="text-emerald-600 text-sm mb-6 font-medium">Control what alerts you receive and how you receive them.</p>
+
+                    <div className="space-y-4 max-w-lg">
+                        <label className="flex items-center justify-between p-4 border border-emerald-100 rounded-xl hover:bg-emerald-50/50 cursor-pointer transition-colors">
+                            <div>
+                                <span className="font-bold text-emerald-900 block">Upcoming Appointments</span>
+                                <span className="text-xs text-emerald-600 font-medium">Get SMS & Email reminders 24h before visits.</span>
+                            </div>
+                            <input type="checkbox" defaultChecked className="w-5 h-5 accent-emerald-600 cursor-pointer" />
+                        </label>
+                        <label className="flex items-center justify-between p-4 border border-emerald-100 rounded-xl hover:bg-emerald-50/50 cursor-pointer transition-colors">
+                            <div>
+                                <span className="font-bold text-emerald-900 block">Medical Report Uploads</span>
+                                <span className="text-xs text-emerald-600 font-medium">Alert me when new patient lab results are available.</span>
+                            </div>
+                            <input type="checkbox" defaultChecked className="w-5 h-5 accent-emerald-600 cursor-pointer" />
+                        </label>
+                        <label className="flex items-center justify-between p-4 border border-emerald-100 rounded-xl hover:bg-emerald-50/50 cursor-pointer transition-colors">
+                            <div>
+                                <span className="font-bold text-emerald-900 block">Staff Announcements</span>
+                                <span className="text-xs text-emerald-600 font-medium">Receive important notifications from hospital administration.</span>
+                            </div>
+                            <input type="checkbox" defaultChecked className="w-5 h-5 accent-emerald-600 cursor-pointer" />
+                        </label>
                     </div>
                 </div>
-            </div>
 
-            <div className="p-8 border-b border-emerald-50">
-                <h3 className="text-xl font-extrabold text-emerald-900 mb-2 flex items-center gap-3">
-                    <Bell size={24} className="text-emerald-500" /> Notification Preferences
-                </h3>
-                <p className="text-emerald-600 text-sm mb-6 font-medium">Control what alerts you receive and how you receive them.</p>
-
-                <div className="space-y-4 max-w-lg">
-                    <label className="flex items-center justify-between p-4 border border-emerald-100 rounded-xl hover:bg-emerald-50/50 cursor-pointer transition-colors">
-                        <div>
-                            <span className="font-bold text-emerald-900 block">Upcoming Appointments</span>
-                            <span className="text-xs text-emerald-600 font-medium">Get SMS & Email reminders 24h before visits.</span>
-                        </div>
-                        <input type="checkbox" defaultChecked className="w-5 h-5 accent-emerald-600 cursor-pointer" />
-                    </label>
-                    <label className="flex items-center justify-between p-4 border border-emerald-100 rounded-xl hover:bg-emerald-50/50 cursor-pointer transition-colors">
-                        <div>
-                            <span className="font-bold text-emerald-900 block">Medical Report Uploads</span>
-                            <span className="text-xs text-emerald-600 font-medium">Alert me when new patient lab results are available.</span>
-                        </div>
-                        <input type="checkbox" defaultChecked className="w-5 h-5 accent-emerald-600 cursor-pointer" />
-                    </label>
-                    <label className="flex items-center justify-between p-4 border border-emerald-100 rounded-xl hover:bg-emerald-50/50 cursor-pointer transition-colors">
-                        <div>
-                            <span className="font-bold text-emerald-900 block">Staff Announcements</span>
-                            <span className="text-xs text-emerald-600 font-medium">Receive important notifications from hospital administration.</span>
-                        </div>
-                        <input type="checkbox" defaultChecked className="w-5 h-5 accent-emerald-600 cursor-pointer" />
-                    </label>
+                <div className="p-8 bg-rose-50/30">
+                    <h3 className="text-xl font-extrabold text-rose-700 mb-2">Danger Zone</h3>
+                    <p className="text-rose-600/80 text-sm mb-5 font-medium">Once you delete your account, there is no going back. All patient allocation and history must be reassigned.</p>
+                    <button className="bg-white border-2 border-rose-200 text-rose-700 hover:bg-rose-600 hover:text-white hover:border-rose-600 px-6 py-2.5 rounded-xl font-bold transition-all shadow-sm">
+                        Delete Account Permanently
+                    </button>
                 </div>
-            </div>
-
-            <div className="p-8 bg-rose-50/30">
-                <h3 className="text-xl font-extrabold text-rose-700 mb-2">Danger Zone</h3>
-                <p className="text-rose-600/80 text-sm mb-5 font-medium">Once you delete your account, there is no going back. All patient allocation and history must be reassigned.</p>
-                <button className="bg-white border-2 border-rose-200 text-rose-700 hover:bg-rose-600 hover:text-white hover:border-rose-600 px-6 py-2.5 rounded-xl font-bold transition-all shadow-sm">
-                    Delete Account Permanently
-                </button>
+                {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 // --- MAIN DOCTOR DASHBOARD MANAGER ---
 const DoctorDashboard = ({ user }) => {

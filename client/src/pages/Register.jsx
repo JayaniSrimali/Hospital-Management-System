@@ -4,6 +4,10 @@ import axios from 'axios';
 import { Activity, ShieldCheck, Mail, Lock, User, Phone, Briefcase } from 'lucide-react';
 import loginImage from '../assets/images/Login.jpg';
 
+const API_BASE_URL = import.meta.env.PROD
+    ? 'https://hospital-management-system-backend-one.vercel.app/api' // Replace with your actual backend URL later
+    : 'http://localhost:5000/api';
+
 const Register = ({ setUser }) => {
     const [formData, setFormData] = useState({
         name: '', email: '', password: '', role: 'patient', phone: ''
@@ -14,11 +18,11 @@ const Register = ({ setUser }) => {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/register', formData);
+            const res = await axios.post(`${API_BASE_URL}/auth/register`, formData);
             localStorage.setItem('userInfo', JSON.stringify(res.data));
             setUser(res.data);
             if (res.data.role === 'patient') {
-                await axios.post('http://localhost:5000/api/patients', {
+                await axios.post(`${API_BASE_URL}/patients`, {
                     userId: res.data._id,
                     age: 25,
                     gender: 'other',

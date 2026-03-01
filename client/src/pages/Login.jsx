@@ -4,6 +4,10 @@ import axios from 'axios';
 import { Activity, ShieldCheck, Mail, Lock } from 'lucide-react';
 import loginImage from '../assets/images/Login.jpg';
 
+const API_BASE_URL = import.meta.env.PROD
+    ? 'https://hospital-management-system-backend-one.vercel.app/api'
+    : 'http://localhost:5000/api';
+
 const Login = ({ setUser }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -13,7 +17,7 @@ const Login = ({ setUser }) => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', {
+            const res = await axios.post(`${API_BASE_URL}/auth/login`, {
                 email, password
             });
             localStorage.setItem('userInfo', JSON.stringify(res.data));

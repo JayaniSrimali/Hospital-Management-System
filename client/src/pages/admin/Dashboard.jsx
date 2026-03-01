@@ -13,7 +13,9 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend);
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.PROD
+    ? 'https://hospital-management-system-backend-one.vercel.app/api'
+    : 'http://localhost:5000/api';
 const getConfig = () => ({
     headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('userInfo'))?.token}` }
 });

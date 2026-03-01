@@ -4,6 +4,10 @@ import axios from 'axios';
 import { Activity, ShieldCheck, Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import loginImage from '../assets/images/Login.jpg';
 
+const API_BASE_URL = import.meta.env.PROD
+    ? 'https://hospital-management-system-backend-one.vercel.app/api'
+    : 'http://localhost:5000/api';
+
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
@@ -21,7 +25,7 @@ const ForgotPassword = () => {
             // For now, we simulate a successful email send to complete the UI flow
 
             // Un-comment this when the backend endpoint is ready
-            // const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+            // const res = await axios.post(`${API_BASE_URL}/auth/forgot-password`, { email });
             // setMessage(res.data.message);
 
             // Simulation

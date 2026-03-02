@@ -12,14 +12,21 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+const fs = require('fs');
+
+// Health check route
+app.get('/api', (req, res) => {
+  res.json({ message: 'Hospital Management System API is running...' });
+});
+
+// Avoid crash on Vercel's read-only filesystem
+if (process.env.NODE_ENV !== 'production') {
+  if (!fs.existsSync('./uploads')) {
+    fs.mkdirSync('./uploads');
+  }
+}
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Ensure uploads directory exists
-const fs = require('fs');
-if (!fs.existsSync('./uploads')) {
-  fs.mkdirSync('./uploads');
-}
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

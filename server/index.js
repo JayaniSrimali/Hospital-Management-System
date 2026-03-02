@@ -9,9 +9,21 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Middleware - Moved to the top for maximum reliability
+app.use(cors({
+  origin: true, // This will reflect the origin of the request, allowing any domain
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+
 app.use(express.json());
+
+// Root route to prevent 'Cannot GET /'
+app.get('/', (req, res) => {
+  res.json({ message: 'Hospital Management System Backend is Live!' });
+});
+
 const fs = require('fs');
 
 // Health check route

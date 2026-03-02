@@ -20,6 +20,11 @@ ChartJS.register(
     LineElement, ArcElement, Title, Tooltip, Legend
 );
 
+const API_BASE = import.meta.env.PROD
+    ? 'https://hospital-management-api-xi.vercel.app/api'
+    : 'http://localhost:5000/api';
+
+
 // --- UTILS ---
 const getToken = () => JSON.parse(localStorage.getItem('userInfo'))?.token;
 const config = () => ({ headers: { Authorization: `Bearer ${getToken()}` } });
@@ -37,9 +42,9 @@ const Toast = ({ message, type, onClose }) => {
 
     return (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[9999] w-[90%] max-w-md pointer-events-none">
-            <div className={`toast-slide-in flex items-center gap-4 p-5 rounded-2xl shadow-2xl border-2 pointer-events-auto bg-white ${isError ? 'border-rose-100 text-rose-900 shadow-rose-950/10' : 'border-emerald-100 text-emerald-900 shadow-emerald-950/10'
-                }`}>
-                <div className={`p-3 rounded-xl flex-shrink-0 ${isError ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500'}`}>
+            <div className={`toast - slide -in flex items - center gap - 4 p - 5 rounded - 2xl shadow - 2xl border - 2 pointer - events - auto bg - white ${isError ? 'border-rose-100 text-rose-900 shadow-rose-950/10' : 'border-emerald-100 text-emerald-900 shadow-emerald-950/10'
+                } `}>
+                <div className={`p - 3 rounded - xl flex - shrink - 0 ${isError ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500'} `}>
                     {isError ? <XCircle size={24} /> : <CheckCircle size={24} />}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -48,7 +53,7 @@ const Toast = ({ message, type, onClose }) => {
                 </div>
                 <button
                     onClick={onClose}
-                    className={`p-2 rounded-lg transition-colors ${isError ? 'hover:bg-rose-50 text-rose-300 hover:text-rose-500' : 'hover:bg-emerald-50 text-emerald-300 hover:text-emerald-500'}`}
+                    className={`p - 2 rounded - lg transition - colors ${isError ? 'hover:bg-rose-50 text-rose-300 hover:text-rose-500' : 'hover:bg-emerald-50 text-emerald-300 hover:text-emerald-500'} `}
                 >
                     <XCircle size={20} />
                 </button>
@@ -66,7 +71,7 @@ const DoctorHome = ({ user }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/appointments', config());
+                const res = await axios.get(`${API_BASE}/appointments`, config());
                 const apps = res.data;
                 const uniquePatients = new Set(apps.map(a => a.patient?._id)).size;
                 const pendingApps = apps.filter(a => a.status === 'Pending').length;
@@ -198,17 +203,21 @@ const DoctorAppointments = () => {
 
     const fetchApps = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/appointments', config());
+            const res = await axios.get(`${API_BASE}/appointments`, config());
             setAppointments(res.data);
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
+
 
     useEffect(() => { fetchApps(); }, []);
 
     const handleStatus = async (id, status) => {
         try {
-            await axios.put(`http://localhost:5000/api/appointments/${id}`, { status }, config());
+            await axios.put(`${API_BASE}/appointments/${id}`, { status }, config());
             setToast({ message: `Appointment ${status.toLowerCase()} successfully!`, type: 'success' });
             fetchApps();
         } catch (err) {
@@ -327,7 +336,7 @@ const DoctorPatients = () => {
     useEffect(() => {
         const fetchPatients = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/appointments', config());
+                const res = await axios.get(`${API_BASE}/appointments`, config());
                 const uniquePatients = [];
                 const ids = new Set();
                 res.data.forEach(app => {
@@ -399,7 +408,7 @@ const DoctorPatients = () => {
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <Link to={`/doctor/prescriptions?patient=${p._id}`} className="flex-[3] bg-emerald-600 text-white text-xs font-bold py-2.5 rounded-xl text-center shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5">
+                                    <Link to={`/ doctor / prescriptions ? patient = ${p._id}`} className="flex-[3] bg-emerald-600 text-white text-xs font-bold py-2.5 rounded-xl text-center shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5">
                                         Prescribe <ArrowRight size={14} />
                                     </Link>
                                     <button className="flex-1 p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 hover:bg-emerald-100 transition-colors flex items-center justify-center">
@@ -430,7 +439,7 @@ const DoctorPrescriptions = () => {
 
     const fetchRx = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/prescriptions', config());
+            const res = await axios.get(`${API_BASE}/prescriptions`, config());
             setPrescriptions(res.data);
         } catch (err) { console.error(err); }
         finally { setLoading(false); }
@@ -438,7 +447,7 @@ const DoctorPrescriptions = () => {
 
     const fetchApps = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/appointments', config());
+            const res = await axios.get(`${API_BASE}/appointments`, config());
             const filteredApps = res.data.filter(a => a.status === 'Approved' || a.status === 'Completed');
             setAppointments(filteredApps);
 
@@ -465,7 +474,7 @@ const DoctorPrescriptions = () => {
         e.preventDefault();
         try {
             const selectedApp = appointments.find(a => a.patient?._id === formData.patientId);
-            await axios.post('http://localhost:5000/api/prescriptions', {
+            await axios.post(`${API_BASE}/prescriptions`, {
                 ...formData,
                 appointmentId: selectedApp?._id
             }, config());
@@ -629,7 +638,7 @@ const DoctorReports = () => {
     useEffect(() => {
         const fetchReports = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/reports', config());
+                const res = await axios.get(`${API_BASE}/reports`, config());
                 setReports(res.data);
             } catch (err) { console.error(err); }
             finally { setLoading(false); }
@@ -886,7 +895,7 @@ const DoctorAnalytics = () => {
                             <p className="text-[10px] font-bold text-emerald-600/60 uppercase tracking-widest mb-1 truncate">{stat.label}</p>
                             <div className="flex items-center gap-2">
                                 <h4 className="text-xl font-black text-emerald-950 tracking-tight">{stat.value}</h4>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${stat.trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>{stat.trend}</span>
+                                <span className={`text - [10px] font - bold px - 1.5 py - 0.5 rounded ${stat.trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>{stat.trend}</span>
                             </div>
                         </div>
                         <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all flex-shrink-0">
@@ -977,7 +986,7 @@ const DoctorProfile = ({ user }) => {
         setSaving(true);
         try {
             const token = JSON.parse(localStorage.getItem('userInfo')).token;
-            await axios.put(`http://localhost:5000/api/auth/profile`, profileData, {
+            await axios.put(`${API_BASE}/auth/profile`, profileData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setIsEditing(false);
@@ -1132,7 +1141,7 @@ const DoctorSettings = () => {
         setSaving(true);
         try {
             const token = JSON.parse(localStorage.getItem('userInfo'))?.token;
-            await axios.put(`http://localhost:5000/api/auth/profile`, { password: passwords.new }, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.put(`${API_BASE}/auth/profile`, { password: passwords.new }, { headers: { Authorization: `Bearer ${token}` } });
             setPasswords({ current: '', new: '', confirm: '' });
             setToast({ message: 'Password updated successfully!', type: 'success' });
         } catch (err) {

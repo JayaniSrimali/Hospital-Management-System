@@ -5,7 +5,7 @@ import { Activity, ShieldCheck, Mail, ArrowLeft, CheckCircle } from 'lucide-reac
 import loginImage from '../assets/images/Login.jpg';
 
 const API_BASE_URL = import.meta.env.PROD
-    ? 'https://hospital-management-git-764aba-jayanisrimali666-2764s-projects.vercel.app/api'
+    ? 'https://hospital-management-api-xi.vercel.app/api'
     : 'http://localhost:5000/api';
 
 const ForgotPassword = () => {

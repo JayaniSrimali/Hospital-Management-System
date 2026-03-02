@@ -14,7 +14,7 @@ import {
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend);
 
 const API_BASE = import.meta.env.PROD
-    ? 'https://hospital-management-git-764aba-jayanisrimali666-2764s-projects.vercel.app/api'
+    ? 'https://hospital-management-api-xi.vercel.app/api'
     : 'http://localhost:5000/api';
 const getConfig = () => ({
     headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('userInfo'))?.token}` }
@@ -740,7 +740,7 @@ const AdminProfile = ({ user }) => {
             // Simulated save wait time
             await new Promise(r => setTimeout(r, 1000));
             // Actual save when profile endpoint is built
-            // await axios.put(`http://localhost:5000/api/auth/profile`, profileData, { headers: { Authorization: `Bearer ${token}` } });
+            // await axios.put(`${API_BASE}/auth/profile`, profileData, { headers: { Authorization: `Bearer ${token}` } });
             setIsEditing(false);
             setToast({ message: 'Profile updated successfully!', type: 'success' });
             setTimeout(() => setToast(null), 3000);
@@ -901,7 +901,7 @@ const AdminSettings = () => {
         setSaving(true);
         try {
             const token = JSON.parse(localStorage.getItem('userInfo'))?.token;
-            await axios.put(`http://localhost:5000/api/auth/profile`, { password: passwords.new }, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.put(`${API_BASE}/auth/profile`, { password: passwords.new }, { headers: { Authorization: `Bearer ${token}` } });
             setPasswords({ current: '', new: '', confirm: '' });
             setToast({ message: 'Password updated successfully!', type: 'success' });
             setTimeout(() => setToast(null), 3000);

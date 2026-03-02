@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Routes, Route, Link } from 'react-router-dom';
 import { Calendar, FileText, CreditCard, PlusCircle, Activity, ShieldCheck, Clock, CheckCircle, AlertCircle, Users, User, Bell, Settings, Search, ChevronRight, X, Info } from 'lucide-react';
-
+const API_BASE = import.meta.env.PROD
+    ? 'https://hospital-management-api-xi.vercel.app/api'
+    : 'http://localhost:5000/api';
 
 const Toast = ({ message, type, onClose }) => {
     useEffect(() => {
@@ -51,10 +53,10 @@ const PatientHome = ({ user }) => {
                 const token = JSON.parse(localStorage.getItem('userInfo')).token;
                 const config = { headers: { Authorization: `Bearer ${token}` } };
                 const [appRes, docRes, rxRes, billRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/appointments', config),
-                    axios.get('http://localhost:5000/api/doctors', config),
-                    axios.get('http://localhost:5000/api/prescriptions', config),
-                    axios.get('http://localhost:5000/api/billing', config)
+                    axios.get(`${API_BASE}/appointments`, config),
+                    axios.get(`${API_BASE}/doctors`, config),
+                    axios.get(`${API_BASE}/prescriptions`, config),
+                    axios.get(`${API_BASE}/billing`, config)
                 ]);
                 setStats({
                     appointments: appRes.data,
@@ -73,7 +75,7 @@ const PatientHome = ({ user }) => {
         e.preventDefault();
         try {
             const token = JSON.parse(localStorage.getItem('userInfo')).token;
-            const res = await axios.post('http://localhost:5000/api/appointments', bookingData, {
+            const res = await axios.post(`${API_BASE}/appointments`, bookingData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setStats({ ...stats, appointments: [...stats.appointments, res.data] });
@@ -267,7 +269,7 @@ const AppointmentsList = () => {
         const fetchAppointments = async () => {
             try {
                 const token = JSON.parse(localStorage.getItem('userInfo')).token;
-                const res = await axios.get('http://localhost:5000/api/appointments', {
+                const res = await axios.get(`${API_BASE}/appointments`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setAppointments(res.data);
@@ -336,7 +338,7 @@ const PrescriptionsList = () => {
         const fetchPrescriptions = async () => {
             try {
                 const token = JSON.parse(localStorage.getItem('userInfo')).token;
-                const res = await axios.get('http://localhost:5000/api/prescriptions', {
+                const res = await axios.get(`${API_BASE}/prescriptions`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setPrescriptions(res.data);
@@ -415,7 +417,7 @@ const BillingList = () => {
         const fetchBills = async () => {
             try {
                 const token = JSON.parse(localStorage.getItem('userInfo')).token;
-                const res = await axios.get('http://localhost:5000/api/billing', {
+                const res = await axios.get(`${API_BASE}/billing`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setBills(res.data);
@@ -446,7 +448,7 @@ const BillingList = () => {
             });
 
             // Refresh bills list
-            const res = await axios.get('http://localhost:5000/api/billing', {
+            const res = await axios.get(`${API_BASE}/billing`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setBills(res.data);
@@ -599,7 +601,7 @@ const DoctorsList = () => {
         const fetchDoctors = async () => {
             try {
                 const token = JSON.parse(localStorage.getItem('userInfo')).token;
-                const res = await axios.get('http://localhost:5000/api/doctors', {
+                const res = await axios.get(`${API_BASE}/doctors`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setDoctors(res.data);
@@ -626,7 +628,7 @@ const DoctorsList = () => {
         e.preventDefault();
         try {
             const token = JSON.parse(localStorage.getItem('userInfo')).token;
-            await axios.post('http://localhost:5000/api/appointments', {
+            await axios.post(`${API_BASE}/appointments`, {
                 doctorId: selectedDoctor.user._id,
                 ...bookingData
             }, {
@@ -966,7 +968,7 @@ const MyProfile = ({ user }) => {
         try {
             const token = JSON.parse(localStorage.getItem('userInfo')).token;
             // Since User model has these fields, we can update it directly
-            await axios.put(`http://localhost:5000/api/auth/profile`, profileData, {
+            await axios.put(`${API_BASE}/auth/profile`, profileData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setIsEditing(false);
@@ -1177,7 +1179,7 @@ const PatientSettings = () => {
         setSaving(true);
         try {
             const token = JSON.parse(localStorage.getItem('userInfo'))?.token;
-            await axios.put(`http://localhost:5000/api/auth/profile`, { password: passwords.new }, { headers: { Authorization: `Bearer ${token}` } });
+            await axios.put(`${API_BASE}/auth/profile`, { password: passwords.new }, { headers: { Authorization: `Bearer ${token}` } });
             setPasswords({ current: '', new: '', confirm: '' });
             setToast({ message: 'Password updated successfully!', type: 'success' });
         } catch (err) {
